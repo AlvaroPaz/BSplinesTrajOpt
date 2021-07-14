@@ -30,7 +30,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-std::string naoFile = "../../data/NAOURDF_inertial_rev.xml";
+std::string naoFile = "../../BSplinesTrajOpt/data/NAOURDF_inertial.xml";
 
 
 #include <IpIpoptApplication.hpp>
@@ -51,75 +51,52 @@ using namespace Eigen;
 
 int main(int argv, char* argc[])
 {
-
     //! Build multibody
+    //! ---------------------------------------------------------------------------------------------------------- !//
     hr::core::World world = hr::core::World();
     std::string sFile = naoFile;
     int robotId = world.getRobotsVector()->size();
     world.loadMultiBodyURDF(sFile,robotId, hr::core::kNAO);
 
-
     std::shared_ptr<hr::core::MultiBody> robot = world.getRobot(0);
 
     hr::VectorXr q = robot->getConfiguration();
-
     q.setZero();
-
     robot->setConfiguration(q);
 
 
     //! Optimization parameters
+    //! ---------------------------------------------------------------------------------------------------------- !//
     std::shared_ptr< hr::core::robotSettingsTrajectoryOptimization > optSettings(new hr::core::robotSettingsTrajectoryOptimization);
 
     optSettings->n = robot->getDoF();
     optSettings->numberControlPoints = 4;//4
-    optSettings->numberPartitions    = 25;//7
+    optSettings->numberPartitions    = 30;//7
     optSettings->si = 0.0;//0.0
-    optSettings->sf = 1.0;//0.1 or 0.2 or 25.0
+    optSettings->sf = 25.0;//0.1 or 0.2 or 25.0
     optSettings->S = hr::VectorXr::LinSpaced(optSettings->numberPartitions+1, optSettings->si, optSettings->sf);
     optSettings->DifferentiationWRT = hr::core::wrt_controlPoints;
     robot->setDifferentiationSize( optSettings->n*optSettings->numberControlPoints );
 
 
-    hr::VectorXr q_1(optSettings->n,1), q_2(optSettings->n,1), q_3(optSettings->n,1), q_4(optSettings->n,1), q_5(optSettings->n,1), q_6(optSettings->n,1), q_7(optSettings->n,1), q_8(optSettings->n,1), q_9(optSettings->n,1);
+    hr::VectorXr q_1(optSettings->n,1), q_2(optSettings->n,1), q_3(optSettings->n,1), q_4(optSettings->n,1), q_5(optSettings->n,1);
     q_1 << 0, 0, 0, 0, 0, 0, 0, 0, 0, -0.035, 0, 0, 0, 0, 0, 0, 0.035, 0, 0, 0, 0, 0, 0, 0;
-
     q_2 << -0.379, 0, 0, 0, 0.379, 0, 0, 0, 0, -0.035, 0, 0, 0, 0, 0, 0, 0.035, 0, 0, -0.379, 0, 0, 0, 0.379;
 
-    q_3 << -0.379, 0, 0, 0, 0.379, 0, 0, 0, 0, -0.035, 0, 1.2000, 0.5148, 0, 0, 0, 0.035, 0, 0, -0.79, 0, 0, 0, 0.379;
+    q_3 << -0.379, 0, 0, 0, 0.379, 0, 0, 0, 0, -0.035, 0, 0, 0, 0, 0, 0, 0.035, 0, 0, -0.79, 0, 0, 0, 0.379;
 
-    q_4 << 0.25, 0.9200, -2.0000, 1.0800, -0.3794, 0, 0, 1.3264, 0, -0.0350, 0, 1.2000, 0.5148, 0, 0.3141, 0, 1.5445, 0, 0, -0.7904, 0, 0, 0, 0.397;
+    q_4 << -0.3000, 0, 0, 0, 0, 0, 1.4112, 0.2730, -1.3730, -0.9863, -0.0062, 0.0015, 0.0214, 1.3945, -0.2731, 1.3698, 0.9879, -0.0077, 0, 0.0016, -0.4510, 0.6995, -0.3528, 0;
+    q_5 << -0.2000, 0.3513, -1.1000, 1.5300, 0, 0, 1.4112, 1.2000, -1.3730, -0.9863, -0.0062, 0.0015, -0.6000, 1.3945, -1.2000, 1.3698, 0.9879, -0.0077, 0, 0.0016, 0.4800, 0.6995, -0.3528, 0;
 
-    q_5 << 0.25, 0.9200, -2.0000, 1.0800, -0.3794, 0, 0, -0.3141, 0, -1.5445, 0, -1.2000, 0.5148, 0, -1.3264, 0, 0.0350, 0, 0, -0.7904, 0, 0, 0, 0.397;
-
-    q_6 << 0.25, 0, 0, 0, -0.3794, 0, 0, -0.3141, 0, -1.5445, 0, -1.2000, 0.5148, 0, -1.3264, 0, 0.0350, 0, 0, -0.7904, -1.0800, 2.0000, -0.9200, 0.2;
-
-    q_7 << 0.25, -1, 0, 0, -0.3794, 0, 0, -0.3141, 0, -1.5445, 0, -1.2000, 0.5148, 0, -1.3264, 0, 0.0350, 0, 0, -0.7904, -1.0800, 2.0000, -0.9200, 0.0;
-
-    q_8 << 0.379, 0, 0, 0, -0.379, 0, 0, 0, 0, -0.035, 0, 0, 0, 0, 0, 0, 0.035, 0, 0, 0.379, 0, 0, 0, -0.379;
-
-    q_9 << 0, 0, 0, 0, 0, 0, 0, 0, 0, -0.035, 0, 0, 0, 0, 0, 0, 0.035, 0, 0, 0, 0, 0, 0, 0;
-
-    std::vector< hr::VectorXr > Q_input;
-    Q_input.clear();
-    Q_input.push_back(q_1);
-    Q_input.push_back(q_2);
-    Q_input.push_back(q_3);
-    Q_input.push_back(q_4);
-    Q_input.push_back(q_5);
-    Q_input.push_back(q_6);
-    Q_input.push_back(q_7);
-    Q_input.push_back(q_8);
-    Q_input.push_back(q_9);
 
     //! Fill up stack of constraints
     optSettings->StackConstraints.clear();
 
     optSettings->StackConstraints.push_back(hr::core::constraint_initialConfiguration);
-    optSettings->initialConfiguration = q_1;
+    optSettings->initialConfiguration = q_4;
 
     optSettings->StackConstraints.push_back(hr::core::constraint_finalConfiguration);
-    optSettings->finalConfiguration = q_2;
+    optSettings->finalConfiguration = q_5;
 
     optSettings->StackConstraints.push_back(hr::core::constraint_initialGeneralizedVelocity);
     optSettings->initialGeneralizedVelocity = hr::VectorXr::Zero(optSettings->n,1);
@@ -129,10 +106,15 @@ int main(int argv, char* argc[])
 
     optSettings->StackConstraints.push_back(hr::core::constraint_pelvisSymmetry);
 
+    //! WARNING -> Hessian of the Lagrangian is not able to support CoM and Mu constraints
+    //! Be sure "hessian_approximation" is enabled when CoM and Mu are enable too
+//    optSettings->StackConstraints.push_back(hr::core::constraint_centerOfMass);
+//    optSettings->StackConstraints.push_back(hr::core::constraint_centroidalMomentum);
+
+
 
     //! Create a new instance of your nlp (use a SmartPtr, not raw)
     Ipopt::SmartPtr<Ipopt::TNLP> mynlp = new PracticeNLP(robot, optSettings);
-
 
     //! Create a new instance of IpoptApplication (use a SmartPtr, not raw)
     //! We are using the factory, since this allows us to compile this example with an Ipopt Windows DLL
@@ -146,7 +128,7 @@ int main(int argv, char* argc[])
     //        app->Options()->SetIntegerValue("acceptable_iter", 5);
     app->Options()->SetStringValue("mu_strategy", "adaptive"); ///monotone adaptive
     app->Options()->SetStringValue("output_file", "ipopt.out");
-    app->Options()->SetStringValue("hessian_approximation", "limited-memory"); /// exact
+    app->Options()->SetStringValue("hessian_approximation", "exact"); /// limited-memory
 //    app->Options()->SetStringValue("derivative_test", "second-order");
     //        app->Options()->SetStringValue("jac_c_constant", "yes");
     //        app->Options()->SetStringValue("linear_solver", "mumps");
@@ -167,22 +149,16 @@ int main(int argv, char* argc[])
         return (int) status;
     }
 
-
     //! Ask Ipopt to solve the problem
-    for(short int innerIter; innerIter < Q_input.size()-1; innerIter++ ){
-        optSettings->initialConfiguration = Q_input.at(innerIter);
-        optSettings->finalConfiguration = Q_input.at(innerIter+1);
-        status = app->OptimizeTNLP(mynlp);
+    status = app->OptimizeTNLP(mynlp);
 
-        if (status == Ipopt::Solve_Succeeded) {
-            std::cout << std::endl << std::endl << "*** The problem solved!" << std::endl;
-        }
-        else {
-            std::cout << std::endl << std::endl << "*** The problem FAILED!" << std::endl;
-        }
 
+    if (status == Ipopt::Solve_Succeeded) {
+        std::cout << std::endl << std::endl << "*** The problem solved!" << std::endl;
     }
-
+    else {
+        std::cout << std::endl << std::endl << "*** The problem FAILED!" << std::endl;
+    }
 
     //! As the SmartPtrs go out of scope, the reference count will be decremented and the objects will automatically be deleted.
     return (int) status;

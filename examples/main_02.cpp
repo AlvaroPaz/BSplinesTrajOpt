@@ -30,7 +30,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-std::string naoFile = "../../geombd/src/data/NAOURDF_inertial.xml";
+std::string naoFile = "../../BSplinesTrajOpt/data/NAOURDF_inertial.xml";
 
 
 #include <IpIpoptApplication.hpp>
@@ -73,9 +73,9 @@ int main(int argv, char* argc[])
 
     optSettings->n = robot->getDoF();
     optSettings->numberControlPoints = 4;//4
-    optSettings->numberPartitions    = 30;//7
+    optSettings->numberPartitions    = 7;//7
     optSettings->si = 0.0;//0.0
-    optSettings->sf = 25.0;//0.1 or 0.2 or 25.0
+    optSettings->sf = 0.2;//0.1 or 0.2 or 25.0
     optSettings->S = hr::VectorXr::LinSpaced(optSettings->numberPartitions+1, optSettings->si, optSettings->sf);
     optSettings->DifferentiationWRT = hr::core::wrt_controlPoints;
     robot->setDifferentiationSize( optSettings->n*optSettings->numberControlPoints );
@@ -110,7 +110,8 @@ int main(int argv, char* argc[])
 
     //! WARNING -> Hessian of the Lagrangian is not able to support CoM and Mu constraints
     //! Be sure "hessian_approximation" is enabled when CoM and Mu are enable too
-//    optSettings->StackConstraints.push_back(hr::core::constraint_centerOfMass);
+
+    optSettings->StackConstraints.push_back(hr::core::constraint_centerOfMass);
 //    optSettings->StackConstraints.push_back(hr::core::constraint_centroidalMomentum);
 
 
@@ -130,8 +131,8 @@ int main(int argv, char* argc[])
     //        app->Options()->SetIntegerValue("acceptable_iter", 5);
     app->Options()->SetStringValue("mu_strategy", "adaptive"); ///monotone adaptive
     app->Options()->SetStringValue("output_file", "ipopt.out");
-    app->Options()->SetStringValue("hessian_approximation", "exact"); /// limited-memory
-    app->Options()->SetStringValue("derivative_test", "second-order");
+    app->Options()->SetStringValue("hessian_approximation", "limited-memory"); /// exact
+//    app->Options()->SetStringValue("derivative_test", "second-order");
     //        app->Options()->SetStringValue("jac_c_constant", "yes");
     //        app->Options()->SetStringValue("linear_solver", "mumps");
     //        app->Options()->SetStringValue("accept_every_trial_step", "yes");
