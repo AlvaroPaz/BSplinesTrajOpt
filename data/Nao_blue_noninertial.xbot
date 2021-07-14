@@ -1,0 +1,37 @@
+<Robot FileName="/home/nao/NAO/work/OpenHRC/src/data/NAOTemplate.xml" DEFName="NAO_blue" DoF="30">
+	<Joint DEFName="Joint1" Type="Prismatic" Predecessor="ROOT" Successor="VIRTUAL_BODY1" Axis="1 0 0" MaxLimit="1000000" MinLimit="-1000000"/>
+	<Joint DEFName="Joint2" Type="Prismatic" Predecessor="VIRTUAL_BODY1" Successor="VIRTUAL_BODY2" Axis="0 1 0" MaxLimit="1000000" MinLimit="-1000000"/>
+    	<Joint DEFName="Joint3" Type="Prismatic" Predecessor="VIRTUAL_BODY2" Successor="VIRTUAL_BODY3" Axis="0 0 1" MaxLimit="1000000" MinLimit="-1000000"/>
+    	<Joint DEFName="Joint4" Type="Revolute" Predecessor="VIRTUAL_BODY3" Successor="VIRTUAL_BODY4" Axis="1 0 0" MaxLimit="3.14159265" MinLimit="-3.14159265"/>
+    	<Joint DEFName="Joint5" Type="Revolute" Predecessor="VIRTUAL_BODY4" Successor="VIRTUAL_BODY5" Axis="0 1 0" MaxLimit="3.14159265" MinLimit="-3.14159265"/>
+    	<Joint DEFName="Joint6" Type="Revolute" Predecessor="VIRTUAL_BODY5" Successor="TORSE" Axis="0 0 1" MaxLimit="3.14159265" MinLimit="-3.14159265"/>
+
+	<Joint DEFName="Joint7" Type="Revolute" Predecessor="TORSE" Successor="HEAD_link1" Axis="0 0 1" MaxLimit="2.0857" MinLimit="-2.0857"/>
+	<Joint DEFName="Joint8" Type="Revolute" Predecessor="HEAD_link1" Successor="HEAD_link2" Axis="0 1 0" MaxLimit="0.5149" MinLimit="-0.6720"/>
+
+	<Joint DEFName="Joint9" Type="Revolute" Predecessor="TORSE" Successor="LARM_link1" Axis="0 1 0 " MaxLimit="2.0857" MinLimit="-2.0857"/>
+	<Joint DEFName="Joint10" Type="Revolute" Predecessor="LARM_link1" Successor="LARM_link2" Axis="0 0 1 " MaxLimit="1.6494" MinLimit="0.0087"/>
+	<Joint DEFName="Joint11" Type="Revolute" Predecessor="LARM_link2" Successor="LARM_link3" Axis="1 0 0 " MaxLimit="2.0857" MinLimit="-2.0857"/>
+	<Joint DEFName="Joint12" Type="Revolute" Predecessor="LARM_link3" Successor="LARM_link4" Axis="0 0 1 " MaxLimit="-0.0087" MinLimit="-1.5621"/>
+	<Joint DEFName="Joint13" Type="Revolute" Predecessor="LARM_link4" Successor="LARM_link5" Axis="1 0 0 " MaxLimit="1.8238" MinLimit="-1.8238"/>
+
+	<Joint DEFName="Joint14" Type="Revolute" Predecessor="TORSE" Successor="RARM_link1" Axis="0 1 0 " MaxLimit="2.0857" MinLimit="-2.0857"/>
+	<Joint DEFName="Joint15" Type="Revolute" Predecessor="RARM_link1" Successor="RARM_link2" Axis="0 0 1 " MaxLimit="-0.0087" MinLimit="-1.6494"/>
+	<Joint DEFName="Joint16" Type="Revolute" Predecessor="RARM_link2" Successor="RARM_link3" Axis="1 0 0 " MaxLimit="2.0857" MinLimit="-2.0857"/>
+	<Joint DEFName="Joint17" Type="Revolute" Predecessor="RARM_link3" Successor="RARM_link4" Axis="0 0 1 " MaxLimit="1.5621" MinLimit="0.0087"/>
+	<Joint DEFName="Joint18" Type="Revolute" Predecessor="RARM_link4" Successor="RARM_link5" Axis="1 0 0 " MaxLimit="1.8238" MinLimit="-1.8238"/>
+
+	<Joint DEFName="Joint19" Type="Revolute" Predecessor="TORSE" Successor="LLEG_link1" Axis="0 0.707106781 -0.707106781 " MaxLimit="0.740810" MinLimit="-1.145303"/>
+	<Joint DEFName="Joint20" Type="Revolute" Predecessor="LLEG_link1" Successor="LLEG_link2" Axis="1 0 0 " MaxLimit="0.790477" MinLimit="-0.379472"/>
+	<Joint DEFName="Joint21" Type="Revolute" Predecessor="LLEG_link2" Successor="LLEG_link3" Axis="0 1 0 " MaxLimit="0.484090" MinLimit="-1.535889"/>
+	<Joint DEFName="Joint22" Type="Revolute" Predecessor="LLEG_link3" Successor="LLEG_link4" Axis="0 1 0 " MaxLimit="2.112528" MinLimit="-0.092346"/>
+	<Joint DEFName="Joint23" Type="Revolute" Predecessor="LLEG_link4" Successor="LLEG_link5" Axis="0 1 0 " MaxLimit="0.922747" MinLimit="-1.189516"/>
+	<Joint DEFName="Joint24" Type="Revolute" Predecessor="LLEG_link5" Successor="LLEG_link6" Axis="1 0 0 " MaxLimit="0.769001" MinLimit="-0.397880"/>
+
+	<Joint DEFName="Joint25" Type="Revolute" Predecessor="TORSE" Successor="RLEG_link1" Axis="0 0.707106781 0.707106781" MaxLimit="0.740810" MinLimit="-1.145303"/>
+	<Joint DEFName="Joint26" Type="Revolute" Predecessor="RLEG_link1" Successor="RLEG_link2" Axis="1 0 0 " MaxLimit="0.379472" MinLimit="-0.790477"/>
+	<Joint DEFName="Joint27" Type="Revolute" Predecessor="RLEG_link2" Successor="RLEG_link3" Axis="0 1 0 " MaxLimit="0.484090" MinLimit="-1.535889"/>
+	<Joint DEFName="Joint28" Type="Revolute" Predecessor="RLEG_link3" Successor="RLEG_link4" Axis="0 1 0 " MaxLimit="2.120198" MinLimit="-0.103083"/>
+	<Joint DEFName="Joint29" Type="Revolute" Predecessor="RLEG_link4" Successor="RLEG_link5" Axis="0 1 0 " MaxLimit="0.932056" MinLimit="-1.186448"/>
+	<Joint DEFName="Joint30" Type="Revolute" Predecessor="RLEG_link5" Successor="RLEG_link6" Axis="1 0 0 " MaxLimit="0.397935" MinLimit="-0.768992"/>
+</Robot>

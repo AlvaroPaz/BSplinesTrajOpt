@@ -1,0 +1,150 @@
+<Robot FileName="/home/daniel/Documentos/Maestria/RobOptTraj-OpenHRC/OCsolver/data/kukaYoubot.xml" DEFName="NAO_blue" DoF="8" NaoVersion="V5">
+
+
+<!-- ********** KINEMATIC PROPERTIES (JOINTS) ********** -->
+
+
+	<Joint name="Joint1" Type="Prismatic">
+	   <parent link="ROOT"/>
+	   <child link="Y_prismatic_link"/>
+	   <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+	   <axis xyz="0 1 0"/>
+	   <Limit Max="1.0" Min="-1.0"/>
+	</Joint>
+
+	<Joint name="Joint2" Type="Prismatic">
+	   <parent link="Y_prismatic_link"/>
+	   <child link="X_prismatic_link"/>
+	   <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.084"/>
+	   <axis xyz="1 0 0"/>
+	   <Limit Max="1.0" Min="-1.0"/>
+	</Joint>
+
+	<Joint name="Joint3" Type="Revolute">
+	   <parent link="X_prismatic_link"/>
+	   <child link="revolute_base_link_1"/>
+	   <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+	   <axis xyz="0 0 1"/>
+	   <Limit Max="1.0" Min="-1.0"/>
+	</Joint>
+
+	<Joint name="Joint4" Type="Revolute">
+	   <parent link="revolute_base_link_1"/>
+	   <child link="revolute_base_link_2"/>
+	   <origin rpy="0.0 0.0 0.0" xyz="0.143 0.0 0.164"/>
+	   <axis xyz="0 0 1"/>
+	   <Limit Max="1.0" Min="-1.0"/>
+	</Joint>
+
+	<Joint name="Joint5" Type="Revolute">
+	   <parent link="revolute_base_link_2"/>
+	   <child link="revolute_link_1"/>
+	   <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+	   <axis xyz="1 0 0"/>
+	   <Limit Max="1.0" Min="-1.0"/>
+	</Joint>
+
+	<Joint name="Joint6" Type="Revolute">
+	   <parent link="revolute_link_1"/>
+	   <child link="revolute_link_2"/>
+	   <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.155"/>
+	   <axis xyz="1 0 0"/>
+	   <Limit Max="1.0" Min="-1.0"/>
+	</Joint>
+
+	<Joint name="Joint7" Type="Revolute">
+	   <parent link="revolute_link_2"/>
+	   <child link="revolute_link_3"/>
+	   <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.135"/>
+	   <axis xyz="1 0 0"/>
+	   <Limit Max="1.0" Min="-1.0"/>
+	</Joint>
+
+	<Joint name="Joint8" Type="Revolute">
+	   <parent link="revolute_link_3"/>
+	   <child link="revolute_link_4"/>
+	   <origin rpy="0.0 0.0 0.0" xyz="0.05 0.0 0.113"/>
+	   <axis xyz="0 0 1"/>
+	   <Limit Max="1.0" Min="-1.0"/>
+	</Joint>
+
+
+<!-- ********** INERTIAL PROPERTIES (LINKS) ********** -->
+
+	<link name="Y_prismatic_link">
+	   <inertial>
+		<mass value="0.0"/>
+		<origin rpy="0.0 0.0 0.0" xyz="-0.033, 0.0, 0.0"/>
+		<inertia ixx="0" ixy="0" ixz="0"
+			 iyy="0" iyz="0" izz="0"/>
+	   </inertial>
+	</link>
+
+	<link name="X_prismatic_link">
+	   <inertial>
+		<mass value="0.0"/>
+		<origin rpy="0.0 0.0 0.0" xyz="0.0, 0.033, 0.0"/>
+		<inertia ixx="0" ixy="0" ixz="0"
+			 iyy="0" iyz="0" izz="0"/>
+	   </inertial>
+	</link>
+
+	<link name="revolute_base_link_1">
+	   <inertial>
+		<mass value="30.0"/>
+		<origin rpy="0.0 0.0 0.0" xyz="0.0, 0.0, 0.033"/>
+		<inertia ixx="0.705" ixy="0" ixz="0"
+			 iyy="0.192" iyz="0" izz="0.255"/>
+	   </inertial>
+	</link>
+
+	<link name="revolute_base_link_2">
+	   <inertial>
+		<mass value="1.390"/>
+		<origin rpy="0.0 0.0 0.0" xyz="0.0, 0.0, -0.058"/>
+		<inertia ixx="0.00696" ixy="0" ixz="0"
+			 iyy="0.00768" iyz="0" izz="0.00676"/>
+	   </inertial>
+	</link>
+
+
+	<link name="revolute_link_1">
+	   <inertial>
+		<mass value="1.318"/>
+		<origin rpy="0.0 0.0 0.0" xyz="0.113, 0.0, 0.0"/>
+		<inertia ixx="0.00228" ixy="0" ixz="0"
+			 iyy="0.0023" iyz="0" izz="0.000483"/>
+	   </inertial>
+	</link>
+
+	<link name="revolute_link_2">
+	   <inertial>
+		<mass value="0.821"/>
+		<origin rpy="0.0 0.0 0.0" xyz="0.104, 0.0, 0.0"/>
+		<inertia ixx="0.00129" ixy="0" ixz="0"
+			 iyy="0.0013" iyz="0" izz="0.00025"/>
+	   </inertial>
+	</link>
+
+	<link name="revolute_link_3">
+	   <inertial>
+		<mass value="0.769"/>
+		<origin rpy="0.0 0.0 0.0" xyz="0.0, -0.053, 0.0"/>
+		<inertia ixx="0.000692" ixy="0" ixz="0"
+			 iyy="0.000489" iyz="0" izz="0.000425"/>
+	   </inertial>
+	</link>
+
+
+	<link name="revolute_link_4">
+	   <inertial>
+		<mass value="0.8"/>
+		<origin rpy="0.0 0.0 0.0" xyz="0.0, 0.0, 0.046"/>
+		<inertia ixx="0.000124" ixy="0" ixz="0"
+			 iyy="6.64e-005" iyz="0" izz="0.000161"/>
+	   </inertial>
+	</link>
+
+</Robot>
+
+
