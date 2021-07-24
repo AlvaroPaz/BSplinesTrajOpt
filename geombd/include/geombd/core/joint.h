@@ -28,15 +28,12 @@
  * Joint class.
  */
 
-#ifndef HR_CORE_JOINT_H
-#define HR_CORE_JOINT_H
+#ifndef GEOMBD_CORE_JOINT_H
+#define GEOMBD_CORE_JOINT_H
 
 #include "geometry.h"
 #include "types.h"
-namespace hr
-{
-namespace core
-{
+namespace geo{
 //! Enum used to specify the type of the joint.
 /*!
   \ingroup core_module
@@ -156,7 +153,7 @@ public:
 
     /*! Get the joint configuration.
          \param none
-         \return the configuration of the joint as hr::real_t
+         \return the configuration of the joint as geo::real_t
          */
     real_t getConfiguration(){ return q; }
 
@@ -168,7 +165,7 @@ public:
 
     /*! Get the joint velocity.
          \param none
-         \return the velocity of the joint as hr::real_t
+         \return the velocity of the joint as geo::real_t
          */
     real_t getVelocity(){ return dq; }
 
@@ -180,7 +177,7 @@ public:
 
     /*! Get the joint acceleration.
           \param none
-          \return the acceleration of the joint as hr::real_t
+          \return the acceleration of the joint as geo::real_t
          */
     real_t getAcceleration(){ return ddq; }
 
@@ -192,7 +189,7 @@ public:
 
     /*! Get the joint torque
           \param none
-          \return the torque of the joint as hr::real_t
+          \return the torque of the joint as geo::real_t
          */
     real_t getTorque(){ return tau; }
 
@@ -228,6 +225,5 @@ public:
 
 
 };
-}   // end of namespace core
-}   // end of namespace hr
-#endif // HR_CORE_JOINT_H
+}   // end of namespace geo
+#endif // GEOMBD_CORE_JOINT_H

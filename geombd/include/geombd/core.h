@@ -31,15 +31,17 @@
 /** \defgroup core_module Core module
   * This is the main module of geombd   *
   * \code
-  * #include <openhrc/core.h>
+  * #include <geombd/core.h>
   * \endcode
   */
 
-#ifndef HR_CORE_H
-#define HR_CORE_H
+#ifndef GEOMBD_CORE_H
+#define GEOMBD_CORE_H
 
 #include "core/types.h"
 #include "core/world.h"
 #include "core/multibody.h"
+#include "core/Lie_operators.h"
+#include "core/kinematics.h"
 
-#endif // HR_CORE_H
+#endif // GEOMBD_CORE_H

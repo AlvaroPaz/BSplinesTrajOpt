@@ -22,7 +22,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-std::string naoFile = "../../data/NAOURDF_inertial.xml";
+std::string naoFile = "../../data/nao_inertial_python.urdf";
 
 using std::cout;
 using std::endl;
@@ -36,13 +36,13 @@ int main(){
     cout << "Example to test the Inverse Dynamics and its two first partial derivatives wrt state" << endl;
 
     //! Build multibody
-    hr::core::World world = hr::core::World();
+    geo::World world = geo::World();
     std::string sFile = naoFile;
     int robotId = world.getRobotsVector()->size();
-    world.loadMultiBodyURDF(sFile,robotId, hr::core::kNAO);
+    world.loadMultiBodyURDF(sFile,robotId, geo::kNAO);
 
 
-    std::shared_ptr<hr::core::MultiBody> robot = world.getRobot(0);
+    std::shared_ptr<geo::MultiBody> robot = world.getRobot(0);
 
 
 
@@ -52,12 +52,12 @@ int main(){
 
 
     int n = robot->getDoF();
-    hr::VectorXr q(n), dq(n), ddq(n);
+    geo::VectorXr q(n), dq(n), ddq(n);
 
     q.setRandom();    dq.setRandom();    ddq.setRandom();
 
 
-    hr::core::InverseDynamics robotMotion(robot);
+    geo::InverseDynamics robotMotion(robot);
     robotMotion.setGeneralizedCoordinates(q, dq, ddq);
 
 
@@ -80,8 +80,8 @@ int main(){
 
 
     //! Numeric verification through finite differences //!
-    hr::MatrixXr numericGradient(D_Tau.rows(),D_Tau.cols());
-    hr::real_t inc_s = pow(2,-24);
+    geo::MatrixXr numericGradient(D_Tau.rows(),D_Tau.cols());
+    geo::real_t inc_s = pow(2,-24);
 
     t1 = std::chrono::high_resolution_clock::now();
 
@@ -145,7 +145,7 @@ int main(){
 
 
     //! Numeric verification through finite differences //!
-    hr::MatrixXr numericHessian(DD_Tau.rows(),DD_Tau.cols());
+    geo::MatrixXr numericHessian(DD_Tau.rows(),DD_Tau.cols());
 
     inc_s = pow(2,-14);
 
@@ -196,7 +196,7 @@ int main(){
 
     t1 = std::chrono::high_resolution_clock::now();
 
-    robotMotion.computeCenterOfMass(true);
+    robotMotion.computeCenterOfMass(true, false);
 
     t2 = std::chrono::high_resolution_clock::now();
 
@@ -210,7 +210,7 @@ int main(){
 
 
     //! Numeric verification through finite differences //!
-    hr::MatrixXr numericD_CoM(D_CoM.rows(),D_CoM.cols());
+    geo::MatrixXr numericD_CoM(D_CoM.rows(),D_CoM.cols());
 
     inc_s = pow(2,-24);
 
@@ -222,7 +222,7 @@ int main(){
         q_aux1(iter) += inc_s;
 
         robotMotion.setGeneralizedCoordinates(q_aux1, dq, ddq);
-        robotMotion.computeCenterOfMass(false);
+        robotMotion.computeCenterOfMass(false, false);
 
         auto temporalCoM = robotMotion.getMultibodyCoM();
 
@@ -233,7 +233,7 @@ int main(){
         dq_aux1(iter) += inc_s;
 
         robotMotion.setGeneralizedCoordinates(q, dq_aux1, ddq);
-        robotMotion.computeCenterOfMass(false);
+        robotMotion.computeCenterOfMass(false, false);
 
         temporalCoM = robotMotion.getMultibodyCoM();
 
@@ -275,7 +275,7 @@ int main(){
 
 
     //! Numeric verification through finite differences //!
-    hr::MatrixXr numericD_SMu(D_SMu.rows(),D_SMu.cols());
+    geo::MatrixXr numericD_SMu(D_SMu.rows(),D_SMu.cols());
 
     inc_s = pow(2,-24);
 
@@ -340,7 +340,7 @@ int main(){
 
 
     //! Numeric verification through finite differences //!
-    hr::MatrixXr numericD_Mu(D_Mu.rows(),D_Mu.cols());
+    geo::MatrixXr numericD_Mu(D_Mu.rows(),D_Mu.cols());
 
     inc_s = pow(2,-24);
 

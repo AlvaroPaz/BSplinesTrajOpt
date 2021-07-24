@@ -29,8 +29,8 @@
  * Multibody class.
  */
 
-#ifndef HR_CORE_MULTIBODY_H
-#define HR_CORE_MULTIBODY_H
+#ifndef GEOMBD_CORE_MULTIBODY_H
+#define GEOMBD_CORE_MULTIBODY_H
 
 
 #include "joint.h"
@@ -38,8 +38,7 @@
 #include "types.h"
 
 
-namespace hr{
-namespace core{
+namespace geo{
 
 //! The type of the Jacobian.
 /*! \ingroup core_module  */
@@ -143,6 +142,10 @@ protected:
 
     //! Spatial vector of gravity.
     SpatialVector gravity;
+
+    //! Bodies ancestors vector.
+    std::vector< std::vector<short int>* > ancestorsBodies;
+
 
 public:
 
@@ -498,6 +501,8 @@ public:
          */
     std::vector<Body*> getPubBodies(){ return bodies; }
 
+    bool bodyBelongsTo(const int n, const int i);
+
 protected:
 
     //! Find and get a Body from the multibody system.
@@ -562,6 +567,11 @@ protected:
     //! Check if two bodies are in collision.
     bool inCollision(Body* body1, Body* body2);
 
+
+    void fillAncestors();
+
+
+
 };
 
 //! MultiBody for NAO Humanoids derived from MultiBody class.
@@ -596,6 +606,5 @@ public:
 
 
 
-} //end of namespace core
-} //end of namespace hr
-#endif // HR_CORE_MULTIBODY_H
+} //end of namespace geo
+#endif // GEOMBD_CORE_MULTIBODY_H

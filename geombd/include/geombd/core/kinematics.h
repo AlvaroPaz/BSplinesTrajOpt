@@ -28,17 +28,13 @@
  *	Class to implement the multibody kinematics.
  */
 
-#ifndef HR_DYNAMICS_KINEMATICS_H
-#define HR_DYNAMICS_KINEMATICS_H
+#ifndef GEOMBD_CORE_KINEMATICS_H
+#define GEOMBD_CORE_KINEMATICS_H
 
 #include <memory>
-#include "geombd/types.h"
 #include "geombd/core.h"
-#include "geombd/dynamics/Lie_operators.h"
 
-namespace hr{
-namespace core{
-
+namespace geo{
 
 class Kinematics : public LieOperators
 {
@@ -50,6 +46,11 @@ class Kinematics : public LieOperators
     public:
 
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW //128-bit alignment
+
+    //! Default constructor.
+    /*! \param .
+        \param */
+    Kinematics( ){}
 
     //! Custom constructor.
     Kinematics(std::shared_ptr< MultiBody > robot){
@@ -146,6 +147,12 @@ class Kinematics : public LieOperators
          */
     void computeForwardKinematics( DynamicBody* currentBody );
 
+    //! Compute the whole multibody forward kinematics and twist simultaneously
+         /*! \param null
+         * \return void
+         */
+    void computeKinematics( );
+
     //! Set generalized coordinates
          /*! \param configuration, generalized velocity, generalized acceleration
          * \return void
@@ -163,7 +170,6 @@ protected:
 
 
 };
-} // end of namespace core
-} // end of namespace hr
+} // end of namespace geo
 
-#endif // HR_DYNAMICS_KINEMATICS_H
+#endif // GEOMBD_CORE_KINEMATICS_H

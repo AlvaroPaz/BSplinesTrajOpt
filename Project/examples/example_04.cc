@@ -33,10 +33,10 @@ using namespace Eigen;
 #define infty 100000
 
 //! Define time variables
-hr::VectorXr S;
+geo::VectorXr S;
 short int n;
 int M;
-hr::real_t si, sf, s_k;
+geo::real_t si, sf, s_k;
 
 
 int main(){
@@ -44,18 +44,18 @@ int main(){
     cout << "Example to test the ABA Differentiation wrt state" << endl;
 
     //! Build multibody
-    hr::core::World world = hr::core::World();
+    geo::World world = geo::World();
     std::string sFile = naoFile;
     int robotId = world.getRobotsVector()->size();
 
-    world.loadMultiBodyURDF(sFile,robotId, hr::core::kNAO);
+    world.loadMultiBodyURDF(sFile,robotId, geo::kNAO);
 
-    std::shared_ptr<hr::core::MultiBody> robot = world.getRobot(0);
+    std::shared_ptr<geo::MultiBody> robot = world.getRobot(0);
 
-    hr::VectorXr q(robot->getDoF());
-    hr::VectorXr dq(robot->getDoF());
-    hr::VectorXr ddq(robot->getDoF());
-    hr::VectorXr tau(robot->getDoF());
+    geo::VectorXr q(robot->getDoF());
+    geo::VectorXr dq(robot->getDoF());
+    geo::VectorXr ddq(robot->getDoF());
+    geo::VectorXr tau(robot->getDoF());
 
     q.setZero();        robot->setConfiguration(q);
     dq.setZero();       robot->setGeneralizedVelocity(dq);
@@ -78,12 +78,12 @@ int main(){
 
 
     //! Vector of coeficients
-    hr::VectorXr C;
+    geo::VectorXr C;
     C.setLinSpaced(n,0.1,0.1*n);
 
 
     //! Forward dynamics object
-    hr::core::ForwardDynamics ForwardDynamics(robot);
+    geo::ForwardDynamics ForwardDynamics(robot);
 
     int t_total = 0, t_total_00 = 0;
     auto t1 = std::chrono::high_resolution_clock::now();

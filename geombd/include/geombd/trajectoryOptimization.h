@@ -36,11 +36,10 @@
   * \endcode
   */
 
-#ifndef HR_TRAJECTORY_OPTIMIZATION_H
-#define HR_TRAJECTORY_OPTIMIZATION_H
+#ifndef GEOMBD_TRAJECTORY_OPTIMIZATION_H
+#define GEOMBD_TRAJECTORY_OPTIMIZATION_H
 
 #include "core.h"
 #include "dynamics.h"
 #include "trajectoryOptimization/directCollocation.h"
-#endif // HR_TRAJECTORYOPTIMIZATION_H
-
+#endif // GEOMBD_TRAJECTORYOPTIMIZATION_H

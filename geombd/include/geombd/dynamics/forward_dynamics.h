@@ -1,4 +1,4 @@
-﻿/*
+/*
  * MIT License
  *
  * Copyright (c) 2020 Alvaro Paz <alvaro.paz@cinvestav.edu.mx>, Gustavo Arechavaleta <garechav@cinvestav.edu.mx>
@@ -28,17 +28,13 @@
  *	Class to implement the forward dynamics.
  */
 
-#ifndef HR_DYNAMICS_FORWARD_DYNAMICS_H
-#define HR_DYNAMICS_FORWARD_DYNAMICS_H
+#ifndef GEOMBD_DYNAMICS_FORWARD_DYNAMICS_H
+#define GEOMBD_DYNAMICS_FORWARD_DYNAMICS_H
 
 #include <memory>
-#include "geombd/types.h"
 #include "geombd/core.h"
-#include "geombd/dynamics/Lie_operators.h"
 
-namespace hr{
-namespace core{
-
+namespace geo{
 
 class ForwardDynamics : public LieOperators
 {
@@ -69,6 +65,7 @@ class ForwardDynamics : public LieOperators
         this->Tau = VectorXr::Zero(n,1);
 
         this->Identity3x3.setIdentity();
+        this->Zeros6x1.setZero();
         this->e_sq.setIdentity();
         this->bodies = robot->getPubBodies();
 
@@ -109,15 +106,11 @@ class ForwardDynamics : public LieOperators
 
         //! Pre-allocation for enhancement
         PRE.resize(n);      SUC.resize(n);      PRESUC.resize(n);
-        D_V_a.resize(n);    D_V_b.resize(n);    D_c_a.resize(n);    D_c_b.resize(n);
-        D_p_a.resize(n);    D_p_b.resize(n);    D_Pn_a.resize(n);   D_Pn_b.resize(n);
-        D_dVa_a.resize(n);  D_dVa_b.resize(n);  D_dV_a.resize(n);   D_dV_b.resize(n);
-        D_U_v.resize(n);    D_U_h.resize(n);    D_Ia.resize(n);     D_In.resize(n);     D_invD.resize(n);
-        D_u_a.resize(n);    D_u_b.resize(n);    D_ddq_a.resize(n);  D_ddq_b.resize(n);
         this->NP = VectorXr::Zero(n,1);  this->NS = VectorXr::Zero(n,1);
 
         S_i = Eigen::MatrixXi::Zero(n,2);
 
+        SK.clear();             SK_2.clear();
         i = 0;
         for ( bodyIterator = bodies.begin()+1; bodyIterator != bodies.end(); bodyIterator++ )
         {
@@ -140,21 +133,62 @@ class ForwardDynamics : public LieOperators
             PreSuc.insert(std::end(PreSuc), std::begin(Suc), std::end(Suc));
             PRESUC.at(i) = PreSuc;
 
-            D_V_a.at(i).conservativeResize(Eigen::NoChange, nP);    D_V_b.at(i).conservativeResize(Eigen::NoChange, nP);
-            D_c_a.at(i).conservativeResize(Eigen::NoChange, nP);    D_c_b.at(i).conservativeResize(Eigen::NoChange, nP);
-            D_p_a.at(i).conservativeResize(Eigen::NoChange, nP);    D_p_b.at(i).conservativeResize(Eigen::NoChange, nP);
-            D_Pn_a.at(i).conservativeResize(Eigen::NoChange, nP+nS-1);   D_Pn_b.at(i).conservativeResize(Eigen::NoChange, nP+nS-1);
-            D_In.at(i).resize(6*(nS-1),6);     D_Ia.at(i).resize(6*(nS-1),6);    D_invD.at(i).resize(1,nS-1);
-            D_U_v.at(i).resize(6*(nS-1),1);    D_U_h.at(i).resize(6*(nS-1),1);
-            D_u_a.at(i).resize(1,n);   D_u_b.at(i).resize(1,n);
-            D_ddq_a.at(i).resize(1,n);   D_ddq_b.at(i).resize(1,n);
-            D_dVa_a.at(i).conservativeResize(Eigen::NoChange, n);   D_dVa_b.at(i).conservativeResize(Eigen::NoChange, n);
-            D_dV_a.at(i).conservativeResize(Eigen::NoChange, n);    D_dV_b.at(i).conservativeResize(Eigen::NoChange, n);
+
+            tempBody->D_q_V.conservativeResize(Eigen::NoChange, nP);
+            tempBody->D_dq_V.conservativeResize(Eigen::NoChange, nP);
+            tempBody->D_q_c.conservativeResize(Eigen::NoChange, nP);
+            tempBody->D_dq_c.conservativeResize(Eigen::NoChange, nP);
+            tempBody->D_q_p.conservativeResize(Eigen::NoChange, nP);
+            tempBody->D_dq_p.conservativeResize(Eigen::NoChange, nP);
+
+            tempBody->D_U_h.conservativeResize(Eigen::NoChange, nS-1);
+            tempBody->D_U_v.conservativeResize(6*(nS-1), Eigen::NoChange);
+            tempBody->D_invD.conservativeResize(Eigen::NoChange, nS-1);
+            tempBody->D_q_u.conservativeResize(Eigen::NoChange, nP+nS-1);
+            tempBody->D_dq_u.conservativeResize(Eigen::NoChange, nP+nS-1);
+
+            tempBody->D_Ia.conservativeResize(6*(nS-1), Eigen::NoChange);
+            tempBody->D_q_Pa.conservativeResize(Eigen::NoChange, nP+nS-1);
+            tempBody->D_dq_Pa.conservativeResize(Eigen::NoChange, nP+nS-1);
+
+            tempBody->D_In.conservativeResize(6*(nS-1), Eigen::NoChange);
+            tempBody->D_q_Pn.conservativeResize(Eigen::NoChange, nP+nS-1);
+            tempBody->D_dq_Pn.conservativeResize(Eigen::NoChange, nP+nS-1);
+
+            tempBody->D_q_dVa.conservativeResize(Eigen::NoChange, n);
+            tempBody->D_dq_dVa.conservativeResize(Eigen::NoChange, n);
+            tempBody->D_q_ddq.conservativeResize(Eigen::NoChange, n);
+            tempBody->D_dq_ddq.conservativeResize(Eigen::NoChange, n);
+            tempBody->D_q_dV.conservativeResize(Eigen::NoChange, n);
+            tempBody->D_dq_dV.conservativeResize(Eigen::NoChange, n);
+
+            tempBody->D_IaC_h.conservativeResize(Eigen::NoChange, nS-1);
+            tempBody->D_IaC_v.conservativeResize(6*(nS-1), Eigen::NoChange);
+
+            if(i==0){
+                tempBody->D_q_dVa = Zeros6x1;
+                tempBody->D_dq_dVa = Zeros6x1;
+            }
+
 
             NP(i) = nP;   NS(i) = nS;
 
-            real_t tempScrew = tempBody->getScrewAxes().transpose()*screwIndexes;
-            if(tempBody->getScrewAxes().sum() == 1){S_i.row(i)<<1, (int) tempScrew;}
+            Screwi = tempBody->getScrewAxes();
+
+            real_t tempScrew = Screwi.transpose()*screwIndexes;
+            if(Screwi.sum() == 1){S_i.row(i)<<1, (int) tempScrew;}
+
+
+            sk = skew(Screwi.segment(3,3));
+
+            SK.push_back(sk);
+            SK_2.push_back(sk*sk);
+
+            adjointScrew = ad(Screwi);
+            tempBody->setadjointScrew(adjointScrew);
+
+            adjointDualScrew = adDual(-Screwi);
+            tempBody->setadjointDualScrew(adjointDualScrew);
 
             i++;
         }
@@ -198,13 +232,13 @@ class ForwardDynamics : public LieOperators
     VectorXr q, dq, Tau;
     Matrix3r sk, sk_2, e_wq, T_wq, Identity3x3;
     Matrix4r e_sq;
-    SpatialMatrix Adjoint, adjoint, AdjointDual, adjointDual;
-    SpatialVector quasiAcceleration;
+    SpatialMatrix Adjoint, adjoint, AdjointDual, adjointDual, AdjointDualadDual;
+    SpatialVector quasiAcceleration, Zeros6x1;
 
     real_t D, invD, u;
     int idx_01, idx_02, idx_03;
-    SpatialVector Screwi, U, Pa, Twist, C_bias;
-    SpatialMatrix Ia, In;
+    SpatialVector Screwi, ScrewiInvD, U, UinvD, Pa, Twist, C_bias;
+    SpatialMatrix Ia, In, UtransU;
 
     typename std::vector< Body* >::iterator bodyIterator;
     DynamicBody* tempBody;
@@ -217,9 +251,8 @@ class ForwardDynamics : public LieOperators
     //! Variables for differentiation
     MatrixXr D_X, D_q, D_dq;
     MatrixXr Aux_I, Aux_II, Diff_Tau;
-    MatrixXrColMajor Aux_III;
-    D_SpatialVector Diff_Twist, Diff_Acceleration, Diff_Wrench, Diff_Pa, Diff_Pn;
-    SpatialMatrix adjointScrew, adjZ;
+    D_SpatialVector Diff_Twist, Diff_Acceleration, Diff_Wrench, Diff_Pa, Diff_Pn, Diff_VectorAux;
+    SpatialMatrix adjointScrew, adjointDualScrew, adjZ, SpatialMatrixAux;
     SpatialVector screwIndexes;
     short int in_screw;
     MatrixXr Diff_Ufd, Diff_Ia, IdentityNxN;
@@ -230,24 +263,29 @@ class ForwardDynamics : public LieOperators
 
     //! ------------------------------------------
     //! Set variables for Enhanced differentiation
-    typedef std::vector<D_SpatialVector> D_Vector;
-    typedef std::vector<MatrixXrColMajor> D_MatrixColMajor;
-    typedef std::vector<MatrixXr> D_Matrix;
 
-    D_Vector D_V_a, D_V_b, D_c_a, D_c_b, D_p_a, D_p_b, D_Pn_a, D_Pn_b, D_dVa_a, D_dVa_b, D_dV_a, D_dV_b;
-    D_MatrixColMajor D_U_v, D_U_h;
-    D_Matrix D_Ia, D_In, D_invD, D_u_a, D_u_b, D_ddq_a, D_ddq_b;
+    std::vector< Matrix3r > SK, SK_2;
+
     D_SpatialVector D_Vb;
 
-    short int nP, nS, PS, nPj;
+    short int nP, nS, PS, nPj, nSj;
     VectorXr NP, NS;
     SpatialMatrix D_p_aux;
-    MatrixXr D_Pa_a, D_Pa_b, D_aux;
 
     std::vector<short int> Pre, Suc, PreSuc;
     std::vector<std::vector<short int>> PRE, SUC, PRESUC;
 
     Eigen::MatrixXi S_i;
+
+    //! Variables for spatial inertias transformation
+    RowMatrix3r Rpro;
+    Vector3r Ppro;
+    Vector9r Rv;
+    Matrix9r Routter;
+    SpatialMatrix Rstack;
+    Matrix3r Ablock, Bblock, Cblock;
+    SpatialVector ABCblocks, Avec, Bvec, Cvec;
+    real_t p0, p1, p2;
 
     // --------------------------------------------
     // Methods
@@ -291,12 +329,23 @@ class ForwardDynamics : public LieOperators
              */
     MatrixXr getInverseInertiaMatrix(){ return inv_H; }
 
+    //! Spatial inertia matrix transformation
+         /*! \param Spatial inertia and a SE(3) element
+         * \return void
+         */
+    void transformSpatialInertiaMatrix(SpatialMatrix& SpatialInertia, Matrix4r& G);
+
+    //! Spatial inertia matrix transformation
+         /*! \param Spatial inertia
+         * \return void
+         */
+    void transformSpatialInertiaMatrix(SpatialMatrix& SpatialInertia);
+
 
     protected:
 
 
 };
-} // end of namespace core
-} // end of namespace hr
+} // end of namespace geo
 
-#endif // HR_DYNAMICS_FORWARD_DYNAMICS_H
+#endif // GEOMBD_DYNAMICS_FORWARD_DYNAMICS_H

@@ -52,14 +52,14 @@ using namespace Eigen;
 
 #include "ipopt_interface.hpp"
 
-typedef Eigen::Map<const hr::VectorXr> MapVec;
+typedef Eigen::Map<const geo::VectorXr> MapVec;
 
 std::ofstream myfile_1, myfile_2, myfile_3;
 
 // using namespace Ipopt;
 
 //! constructor
-PracticeNLP::PracticeNLP( std::shared_ptr< hr::core::MultiBody > robot, std::shared_ptr< hr::core::robotSettingsTrajectoryOptimization > robotSettings ) : robotNonlinearProblem{nullptr} {
+PracticeNLP::PracticeNLP( std::shared_ptr< geo::MultiBody > robot, std::shared_ptr< geo::robotSettingsTrajectoryOptimization > robotSettings ) : robotNonlinearProblem{nullptr} {
 
     this->robot = robot;
     this->robotSettings = robotSettings;
@@ -74,7 +74,7 @@ PracticeNLP::PracticeNLP( std::shared_ptr< hr::core::MultiBody > robot, std::sha
     this->S = robotSettings->S;
 
     // Motion object instance
-    this->robotNonlinearProblem = new hr::core::DirectCollocation( robot, robotSettings );    
+    this->robotNonlinearProblem = new geo::DirectCollocation( robot, robotSettings );
 
     this->numberConstraints = robotSettings->numberConstraints;
 
@@ -82,7 +82,7 @@ PracticeNLP::PracticeNLP( std::shared_ptr< hr::core::MultiBody > robot, std::sha
     robotNonlinearProblem->buildBasisFunctions(  );
 
     // Allocating control points
-    this->controlPoints = hr::VectorXr::Zero( numberControlPoints*nDoF, 1 );
+    this->controlPoints = geo::VectorXr::Zero( numberControlPoints*nDoF, 1 );
 
     // Set initial configuration
     this->initialConfiguration = robotSettings->initialConfiguration;
@@ -150,83 +150,83 @@ bool PracticeNLP::get_bounds_info(Ipopt::Index n,
 //    assert(m == 4*nDoF);
 
     //! upper joint limits
-    Map<hr::VectorXr>( x_u, n, 1 ) = robot->getJointUpLimits( ).replicate( numberControlPoints, 1 );
+    Map<geo::VectorXr>( x_u, n, 1 ) = robot->getJointUpLimits( ).replicate( numberControlPoints, 1 );
 
     //! lower joint limits
-    Map<hr::VectorXr>( x_l, n, 1 ) = robot->getJointLowLimits( ).replicate( numberControlPoints, 1 );
+    Map<geo::VectorXr>( x_l, n, 1 ) = robot->getJointLowLimits( ).replicate( numberControlPoints, 1 );
 
     //! all constraints are assumed bilateral
-    hr::VectorXr constraintsUP(m,1);
-    hr::VectorXr constraintsLOW(m,1);
+    geo::VectorXr constraintsUP(m,1);
+    geo::VectorXr constraintsLOW(m,1);
 
     constraintsUP.setOnes();
     constraintsLOW.setOnes();
 
     //! This is customizable too
-    hr::real_t qiBound_u = 1e-3;             //! Position 1e-3
-    hr::real_t qfBound_u = 1e-3;
-    hr::real_t dqiBound_u = 1e-3;            //! Velocity 1e-3
-    hr::real_t dqfBound_u = 1e-3;
-    hr::real_t pelvisBound_u = 1e-3;         //! Pelvis symmetry 1e-10
-    hr::real_t comBound_u = 0.026;           //! CoM    0.026
-    hr::real_t muBound_u = 1e-2;             //! Centroidal momentum 1e-2
+    geo::real_t qiBound_u = 1e-3;             //! Position 1e-3
+    geo::real_t qfBound_u = 1e-3;
+    geo::real_t dqiBound_u = 1e-3;            //! Velocity 1e-3
+    geo::real_t dqfBound_u = 1e-3;
+    geo::real_t pelvisBound_u = 1e-3;         //! Pelvis symmetry 1e-10
+    geo::real_t comBound_u = 0.026;           //! CoM    0.026
+    geo::real_t muBound_u = 1e-2;             //! Centroidal momentum 1e-2
 
-    hr::real_t qiBound_l = -1e-3;            //! Position -1e-3
-    hr::real_t qfBound_l = -1e-3;
-    hr::real_t dqiBound_l = -1e-3;           //! Velocity -1e-3
-    hr::real_t dqfBound_l = -1e-3;
-    hr::real_t pelvisBound_l = -1e-3;        //! Pelvis symmetry -1e-10
-    hr::real_t comBound_l = -0.026;          //! CoM    -0.026
-    hr::real_t muBound_l = -1e-2;            //! Centroidal momentum -1e-2
+    geo::real_t qiBound_l = -1e-3;            //! Position -1e-3
+    geo::real_t qfBound_l = -1e-3;
+    geo::real_t dqiBound_l = -1e-3;           //! Velocity -1e-3
+    geo::real_t dqfBound_l = -1e-3;
+    geo::real_t pelvisBound_l = -1e-3;        //! Pelvis symmetry -1e-10
+    geo::real_t comBound_l = -0.026;          //! CoM    -0.026
+    geo::real_t muBound_l = -1e-2;            //! Centroidal momentum -1e-2
 
 
     //! Fill up constraints
     int innerIndex = 0;
-    for(hr::core::ConstraintsStack::iterator it = StackConstraints.begin(); it != StackConstraints.end(); ++it) {
+    for(geo::ConstraintsStack::iterator it = StackConstraints.begin(); it != StackConstraints.end(); ++it) {
         switch ( *it ) {
-        case hr::core::constraint_initialConfiguration: {
+        case geo::constraint_initialConfiguration: {
             constraintsUP.segment(innerIndex,nDoF) *= qiBound_u;
             constraintsLOW.segment(innerIndex,nDoF) *= qiBound_l;
             innerIndex += nDoF;
 
             break;
         }
-        case hr::core::constraint_finalConfiguration: {
+        case geo::constraint_finalConfiguration: {
             constraintsUP.segment(innerIndex,nDoF) *= qfBound_u;
             constraintsLOW.segment(innerIndex,nDoF) *= qfBound_l;
             innerIndex += nDoF;
 
             break;
         }
-        case hr::core::constraint_initialGeneralizedVelocity: {
+        case geo::constraint_initialGeneralizedVelocity: {
             constraintsUP.segment(innerIndex,nDoF) *= dqiBound_u;
             constraintsLOW.segment(innerIndex,nDoF) *= dqiBound_l;
             innerIndex += nDoF;
 
             break;
         }
-        case hr::core::constraint_finalGeneralizedVelocity: {
+        case geo::constraint_finalGeneralizedVelocity: {
             constraintsUP.segment(innerIndex,nDoF) *= dqfBound_u;
             constraintsLOW.segment(innerIndex,nDoF) *= dqfBound_l;
             innerIndex += nDoF;
 
             break;
         }
-        case hr::core::constraint_pelvisSymmetry: {
+        case geo::constraint_pelvisSymmetry: {
             constraintsUP.segment(innerIndex,S.size()) *= pelvisBound_u;
             constraintsLOW.segment(innerIndex,S.size()) *= pelvisBound_l;
             innerIndex += S.size();
 
             break;
         }
-        case hr::core::constraint_centerOfMass: {
+        case geo::constraint_centerOfMass: {
             constraintsUP.segment(innerIndex,2*S.size()) *= comBound_u;
             constraintsLOW.segment(innerIndex,2*S.size()) *= comBound_l;
             innerIndex += 2*S.size();
 
             break;
         }
-        case hr::core::constraint_centroidalMomentum: {
+        case geo::constraint_centroidalMomentum: {
             constraintsUP.segment(innerIndex,6*S.size()) *= muBound_u;
             constraintsLOW.segment(innerIndex,6*S.size()) *= muBound_l;
             innerIndex += 6*S.size();
@@ -240,8 +240,8 @@ bool PracticeNLP::get_bounds_info(Ipopt::Index n,
         }
     }
 
-    Map<hr::VectorXr>( g_u, m, 1 ) = constraintsUP;
-    Map<hr::VectorXr>( g_l, m, 1 ) = constraintsLOW;
+    Map<geo::VectorXr>( g_u, m, 1 ) = constraintsUP;
+    Map<geo::VectorXr>( g_l, m, 1 ) = constraintsLOW;
 
     return true;
 }
@@ -264,8 +264,8 @@ bool PracticeNLP::get_starting_point(Ipopt::Index n,
     assert(init_lambda == false);
 
     //! set primal solution as linear interpolation
-    hr::MatrixXr primalSolution = initialConfiguration.replicate(numberControlPoints,1) + Eigen::kroneckerProduct(hr::VectorXr::LinSpaced(numberControlPoints, 0, 1),finalConfiguration-initialConfiguration);
-    Map<hr::MatrixXr>( x, n, 1 ) = primalSolution;
+    geo::MatrixXr primalSolution = initialConfiguration.replicate(numberControlPoints,1) + Eigen::kroneckerProduct(geo::VectorXr::LinSpaced(numberControlPoints, 0, 1),finalConfiguration-initialConfiguration);
+    Map<geo::MatrixXr>( x, n, 1 ) = primalSolution;
 
     return true;
 }
@@ -304,7 +304,7 @@ bool PracticeNLP::eval_grad_f(Ipopt::Index n, const Ipopt::Number* x, bool new_x
     robotNonlinearProblem->computeObjectiveFunction(controlPoints, true, false);
 
     //! casting the retrieved cost gradient
-    Map<hr::MatrixXr>( grad_f, 1, n ) = robotNonlinearProblem->getCostGradient();
+    Map<geo::MatrixXr>( grad_f, 1, n ) = robotNonlinearProblem->getCostGradient();
 
     return true;
 }
@@ -327,7 +327,7 @@ bool PracticeNLP::eval_g(Ipopt::Index n,
     robotNonlinearProblem->computeConstraints(controlPoints, false);
 
     //! casting the retrieved constraints
-    Map<hr::MatrixXr>( g, m, 1 ) = robotNonlinearProblem->getConstraints();
+    Map<geo::MatrixXr>( g, m, 1 ) = robotNonlinearProblem->getConstraints();
 
     return true;
 }
@@ -362,7 +362,7 @@ bool PracticeNLP::eval_jac_g(Ipopt::Index n,
         robotNonlinearProblem->computeConstraints(controlPoints, true);
 
         //! casting the retrieved constraints Jacobian
-        Map<hr::MatrixXr>( values, m, n ) = robotNonlinearProblem->getConstraintsJacobian();
+        Map<geo::MatrixXr>( values, m, n ) = robotNonlinearProblem->getConstraintsJacobian();
 
     }
 
@@ -408,9 +408,9 @@ bool PracticeNLP::eval_h(Ipopt::Index n,
         }
 
         //! Triangulating and casting the retrieved symmetric Hessian
-        hr::MatrixXr costHessian = robotNonlinearProblem->getCostHessian();
+        geo::MatrixXr costHessian = robotNonlinearProblem->getCostHessian();
 
-        hr::VectorXr stackCostHessian(nele_hess);
+        geo::VectorXr stackCostHessian(nele_hess);
 
         Ipopt::Index k_ = 0;
         for (int i__=0;i__<n;i__++){
@@ -420,7 +420,7 @@ bool PracticeNLP::eval_h(Ipopt::Index n,
 
         stackCostHessian *= obj_factor;
 
-        Map<hr::MatrixXr>( values, nele_hess, 1 ) = stackCostHessian;
+        Map<geo::MatrixXr>( values, nele_hess, 1 ) = stackCostHessian;
 
     }
 
@@ -480,7 +480,7 @@ void PracticeNLP::finalize_solution(Ipopt::SolverReturn status,
         //    cout << endl << endl << "Jacobian of constraints" << endl;
         //    cout << robotNonlinearProblem->getConstraintsJacobian().transpose() << endl;
 
-        //    hr::MatrixXrColMajor aux = robotNonlinearProblem->getBasis()*controlPoints;
+        //    geo::MatrixXrColMajor aux = robotNonlinearProblem->getBasis()*controlPoints;
         //    aux.resize(nDoF,S.size());
         //    cout << endl << endl << "Optimal trajectory = " << endl;
         //    cout << std::scientific << std::setprecision(12) << aux.transpose() << endl;
@@ -488,7 +488,7 @@ void PracticeNLP::finalize_solution(Ipopt::SolverReturn status,
 
     //! Save q, dq and ddq data in files
     if(saveData){
-        hr::MatrixXrColMajor qTrajectory, dqTrajectory, ddqTrajectory;
+        geo::MatrixXrColMajor qTrajectory, dqTrajectory, ddqTrajectory;
         qTrajectory = robotNonlinearProblem->getBasis()*controlPoints;
         dqTrajectory = robotNonlinearProblem->getDBasis()*controlPoints;
         ddqTrajectory = robotNonlinearProblem->getDDBasis()*controlPoints;
@@ -513,10 +513,10 @@ void PracticeNLP::finalize_solution(Ipopt::SolverReturn status,
     //! B-Spline extension of vector time
     if(BSplineInterpolation){
         numberPartitions = 79;
-        S = hr::VectorXr::LinSpaced(numberPartitions+1, si, sf);
+        S = geo::VectorXr::LinSpaced(numberPartitions+1, si, sf);
         robotNonlinearProblem->buildBasisFunctions(numberControlPoints, S);
 
-        hr::MatrixXrColMajor aux2 = robotNonlinearProblem->getBasis()*controlPoints;
+        geo::MatrixXrColMajor aux2 = robotNonlinearProblem->getBasis()*controlPoints;
         aux2.resize(nDoF,S.size());
         cout << endl << endl << "Optimal trajectory = " << endl;
         cout << aux2.transpose() << endl;
@@ -524,7 +524,7 @@ void PracticeNLP::finalize_solution(Ipopt::SolverReturn status,
 
     //! Coppelia remote streaming
     if(remoteApiCoppelia){
-        hr::MatrixXrColMajor qTrajectory, dqTrajectory, ddqTrajectory;
+        geo::MatrixXrColMajor qTrajectory, dqTrajectory, ddqTrajectory;
         qTrajectory = robotNonlinearProblem->getBasis()*controlPoints;
         dqTrajectory = robotNonlinearProblem->getDBasis()*controlPoints;
         ddqTrajectory = robotNonlinearProblem->getDDBasis()*controlPoints;

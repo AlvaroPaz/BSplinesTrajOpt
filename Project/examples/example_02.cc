@@ -36,15 +36,15 @@ int main(){
     cout << "Example to test the Inverse Dynamics and its two first partial derivatives wrt control points" << endl;
 
     //! Build multibody
-    hr::core::World world = hr::core::World();
+    geo::World world = geo::World();
     std::string sFile = naoFile;
     int robotId = world.getRobotsVector()->size();
-    world.loadMultiBodyURDF(sFile,robotId, hr::core::kNAO);
+    world.loadMultiBodyURDF(sFile,robotId, geo::kNAO);
 
 
-    std::shared_ptr< hr::core::MultiBody > robot = world.getRobot(0);
+    std::shared_ptr< geo::MultiBody > robot = world.getRobot(0);
 
-    hr::VectorXr q = robot->getConfiguration();
+    geo::VectorXr q = robot->getConfiguration();
 
     q.setZero();
 
@@ -52,35 +52,35 @@ int main(){
 
 
     //! Optimization parameters
-    std::shared_ptr< hr::core::robotSettingsTrajectoryOptimization > optSettings(new hr::core::robotSettingsTrajectoryOptimization);
+    std::shared_ptr< geo::robotSettingsTrajectoryOptimization > optSettings(new geo::robotSettingsTrajectoryOptimization);
 
     optSettings->n =  robot->getDoF();
     optSettings->numberControlPoints = 4;//4
     optSettings->numberPartitions    = 7;//7
     optSettings->si = 0.0;
     optSettings->sf = 0.1;
-    optSettings->S = hr::VectorXr::LinSpaced(optSettings->numberPartitions+1, optSettings->si, optSettings->sf);
-    optSettings->DifferentiationWRT = hr::core::wrt_controlPoints;
+    optSettings->S = geo::VectorXr::LinSpaced(optSettings->numberPartitions+1, optSettings->si, optSettings->sf);
+    optSettings->DifferentiationWRT = geo::wrt_controlPoints;
     robot->setDifferentiationSize( optSettings->n*optSettings->numberControlPoints );
 
     //! Fill up stack of constraints
     optSettings->StackConstraints.clear();
 
-    optSettings->StackConstraints.push_back(hr::core::constraint_initialConfiguration);
-    optSettings->initialConfiguration = hr::VectorXr::Zero(optSettings->n,1);
+    optSettings->StackConstraints.push_back(geo::constraint_initialConfiguration);
+    optSettings->initialConfiguration = geo::VectorXr::Zero(optSettings->n,1);
 
-    optSettings->StackConstraints.push_back(hr::core::constraint_finalConfiguration);
-    optSettings->finalConfiguration = hr::VectorXr::Ones(optSettings->n,1);
+    optSettings->StackConstraints.push_back(geo::constraint_finalConfiguration);
+    optSettings->finalConfiguration = geo::VectorXr::Ones(optSettings->n,1);
 
-    optSettings->StackConstraints.push_back(hr::core::constraint_initialGeneralizedVelocity);
-    optSettings->initialGeneralizedVelocity = hr::VectorXr::Zero(optSettings->n,1);
+    optSettings->StackConstraints.push_back(geo::constraint_initialGeneralizedVelocity);
+    optSettings->initialGeneralizedVelocity = geo::VectorXr::Zero(optSettings->n,1);
 
-    optSettings->StackConstraints.push_back(hr::core::constraint_finalGeneralizedVelocity);
-    optSettings->finalGeneralizedVelocity = hr::VectorXr::Zero(optSettings->n,1);
+    optSettings->StackConstraints.push_back(geo::constraint_finalGeneralizedVelocity);
+    optSettings->finalGeneralizedVelocity = geo::VectorXr::Zero(optSettings->n,1);
 
-    optSettings->StackConstraints.push_back(hr::core::constraint_pelvisSymmetry);
-    optSettings->StackConstraints.push_back(hr::core::constraint_centerOfMass);
-    optSettings->StackConstraints.push_back(hr::core::constraint_centroidalMomentum);
+    optSettings->StackConstraints.push_back(geo::constraint_pelvisSymmetry);
+    optSettings->StackConstraints.push_back(geo::constraint_centerOfMass);
+    optSettings->StackConstraints.push_back(geo::constraint_centroidalMomentum);
 
 
 
@@ -90,14 +90,14 @@ int main(){
 
 
     //! Trajectory optimization instantiation
-    hr::core::DirectCollocation robotNonlinearProblem(robot, optSettings);
+    geo::DirectCollocation robotNonlinearProblem(robot, optSettings);
 
 
     //! Build basis functions
     robotNonlinearProblem.buildBasisFunctions(  );
 
 
-    hr::VectorXr c(optSettings->n*optSettings->numberControlPoints); // control points
+    geo::VectorXr c(optSettings->n*optSettings->numberControlPoints); // control points
 
     c.setRandom();
 
@@ -120,8 +120,8 @@ int main(){
 
 
     //! Numeric verification through finite differences //!
-    hr::MatrixXr numericD_Cost(D_cost.rows(),D_cost.cols());
-    hr::real_t inc_s = pow(2,-24);
+    geo::MatrixXr numericD_Cost(D_cost.rows(),D_cost.cols());
+    geo::real_t inc_s = pow(2,-24);
 
     t1 = std::chrono::high_resolution_clock::now();
 
@@ -171,7 +171,7 @@ int main(){
 
 
     //! Numeric verification through finite differences //!
-    hr::MatrixXr numericDD_Cost(DD_cost.rows(),DD_cost.cols());
+    geo::MatrixXr numericDD_Cost(DD_cost.rows(),DD_cost.cols());
     inc_s = pow(2,-24);
 
     t1 = std::chrono::high_resolution_clock::now();
@@ -223,7 +223,7 @@ int main(){
 
 
     //! Numeric verification through finite differences //!
-    hr::MatrixXr numericD_constraints(D_constraints.rows(),D_constraints.cols());
+    geo::MatrixXr numericD_constraints(D_constraints.rows(),D_constraints.cols());
     inc_s = pow(2,-24);
 
     t1 = std::chrono::high_resolution_clock::now();
@@ -261,14 +261,14 @@ int main(){
     //! Fill up stack of constraints
     optSettings->StackConstraints.clear();
 
-    optSettings->StackConstraints.push_back(hr::core::constraint_finalGeneralizedVelocity);
-    optSettings->finalGeneralizedVelocity = hr::VectorXr::Zero(optSettings->n,1);
+    optSettings->StackConstraints.push_back(geo::constraint_finalGeneralizedVelocity);
+    optSettings->finalGeneralizedVelocity = geo::VectorXr::Zero(optSettings->n,1);
 
-    optSettings->StackConstraints.push_back(hr::core::constraint_initialConfiguration);
-    optSettings->initialConfiguration = hr::VectorXr::Zero(optSettings->n,1);
+    optSettings->StackConstraints.push_back(geo::constraint_initialConfiguration);
+    optSettings->initialConfiguration = geo::VectorXr::Zero(optSettings->n,1);
 
-    optSettings->StackConstraints.push_back(hr::core::constraint_initialGeneralizedVelocity);
-    optSettings->initialGeneralizedVelocity = hr::VectorXr::Zero(optSettings->n,1);
+    optSettings->StackConstraints.push_back(geo::constraint_initialGeneralizedVelocity);
+    optSettings->initialGeneralizedVelocity = geo::VectorXr::Zero(optSettings->n,1);
 
 
     //! Update last changes

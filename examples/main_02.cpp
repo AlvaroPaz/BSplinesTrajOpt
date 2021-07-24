@@ -36,7 +36,7 @@ std::string naoFile = "../../BSplinesTrajOpt/data/NAOURDF_inertial.xml";
 #include <IpIpoptApplication.hpp>
 #include <iostream>
 
-#include "ipopt_interface.hpp"
+#include "../ipopt/ipopt_interface.hpp"
 
 
 // using namespace Ipopt;
@@ -53,15 +53,15 @@ int main(int argv, char* argc[])
 {
 
     //! Build multibody
-    hr::core::World world = hr::core::World();
+    geo::World world = geo::World();
     std::string sFile = naoFile;
     int robotId = world.getRobotsVector()->size();
-    world.loadMultiBodyURDF(sFile,robotId, hr::core::kNAO);
+    world.loadMultiBodyURDF(sFile,robotId, geo::kNAO);
 
 
-    std::shared_ptr<hr::core::MultiBody> robot = world.getRobot(0);
+    std::shared_ptr<geo::MultiBody> robot = world.getRobot(0);
 
-    hr::VectorXr q = robot->getConfiguration();
+    geo::VectorXr q = robot->getConfiguration();
 
     q.setZero();
 
@@ -69,19 +69,19 @@ int main(int argv, char* argc[])
 
 
     //! Optimization parameters
-    std::shared_ptr< hr::core::robotSettingsTrajectoryOptimization > optSettings(new hr::core::robotSettingsTrajectoryOptimization);
+    std::shared_ptr< geo::robotSettingsTrajectoryOptimization > optSettings(new geo::robotSettingsTrajectoryOptimization);
 
     optSettings->n = robot->getDoF();
     optSettings->numberControlPoints = 4;//4
     optSettings->numberPartitions    = 7;//7
     optSettings->si = 0.0;//0.0
     optSettings->sf = 0.2;//0.1 or 0.2 or 25.0
-    optSettings->S = hr::VectorXr::LinSpaced(optSettings->numberPartitions+1, optSettings->si, optSettings->sf);
-    optSettings->DifferentiationWRT = hr::core::wrt_controlPoints;
+    optSettings->S = geo::VectorXr::LinSpaced(optSettings->numberPartitions+1, optSettings->si, optSettings->sf);
+    optSettings->DifferentiationWRT = geo::wrt_controlPoints;
     robot->setDifferentiationSize( optSettings->n*optSettings->numberControlPoints );
 
 
-    hr::VectorXr q_1(optSettings->n,1), q_2(optSettings->n,1), q_3(optSettings->n,1), q_4(optSettings->n,1), q_5(optSettings->n,1);
+    geo::VectorXr q_1(optSettings->n,1), q_2(optSettings->n,1), q_3(optSettings->n,1), q_4(optSettings->n,1), q_5(optSettings->n,1);
     q_1 << 0, 0, 0, 0, 0, 0, 0, 0, 0, -0.035, 0, 0, 0, 0, 0, 0, 0.035, 0, 0, 0, 0, 0, 0, 0;
     q_2 << -0.379, 0, 0, 0, 0.379, 0, 0, 0, 0, -0.035, 0, 0, 0, 0, 0, 0, 0.035, 0, 0, -0.379, 0, 0, 0, 0.379;
 
@@ -94,25 +94,25 @@ int main(int argv, char* argc[])
     //! Fill up stack of constraints
     optSettings->StackConstraints.clear();
 
-    optSettings->StackConstraints.push_back(hr::core::constraint_initialConfiguration);
+    optSettings->StackConstraints.push_back(geo::constraint_initialConfiguration);
     optSettings->initialConfiguration = q_4;
 
-    optSettings->StackConstraints.push_back(hr::core::constraint_finalConfiguration);
+    optSettings->StackConstraints.push_back(geo::constraint_finalConfiguration);
     optSettings->finalConfiguration = q_5;
 
-    optSettings->StackConstraints.push_back(hr::core::constraint_initialGeneralizedVelocity);
-    optSettings->initialGeneralizedVelocity = hr::VectorXr::Zero(optSettings->n,1);
+    optSettings->StackConstraints.push_back(geo::constraint_initialGeneralizedVelocity);
+    optSettings->initialGeneralizedVelocity = geo::VectorXr::Zero(optSettings->n,1);
 
-    optSettings->StackConstraints.push_back(hr::core::constraint_finalGeneralizedVelocity);
-    optSettings->finalGeneralizedVelocity = hr::VectorXr::Zero(optSettings->n,1);
+    optSettings->StackConstraints.push_back(geo::constraint_finalGeneralizedVelocity);
+    optSettings->finalGeneralizedVelocity = geo::VectorXr::Zero(optSettings->n,1);
 
-    optSettings->StackConstraints.push_back(hr::core::constraint_pelvisSymmetry);
+    optSettings->StackConstraints.push_back(geo::constraint_pelvisSymmetry);
 
     //! WARNING -> Hessian of the Lagrangian is not able to support CoM and Mu constraints
     //! Be sure "hessian_approximation" is enabled when CoM and Mu are enable too
 
-    optSettings->StackConstraints.push_back(hr::core::constraint_centerOfMass);
-//    optSettings->StackConstraints.push_back(hr::core::constraint_centroidalMomentum);
+    optSettings->StackConstraints.push_back(geo::constraint_centerOfMass);
+//    optSettings->StackConstraints.push_back(geo::constraint_centroidalMomentum);
 
 
 

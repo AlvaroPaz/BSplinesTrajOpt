@@ -28,8 +28,8 @@
  * Body class. It has functions to build a body from a xml file.
  */
 
-#ifndef HR_CORE_BODY_H
-#define HR_CORE_BODY_H
+#ifndef GEOMBD_CORE_BODY_H
+#define GEOMBD_CORE_BODY_H
 
 #include <list>
 #include "operational_handle.h"
@@ -41,8 +41,7 @@ class PQP_Model; // Forward declaration of the class PQP_Model.
 
 typedef double PQP_REAL; // Forward declaration of the PQP_REAL type used by the PQP library
 
-namespace hr {
-namespace core {
+namespace geo{
 
 
 //!  Body class definition
@@ -259,7 +258,6 @@ private:
     PQP_REAL* getPQPtranslation(){ return pqpTranslation; }
 
 };
-} // end of namespace core
-} // end of namespace hr
+} // end of namespace geo
 
-#endif // HR_CORE_BODY_H
+#endif // GEOMBD_CORE_BODY_H

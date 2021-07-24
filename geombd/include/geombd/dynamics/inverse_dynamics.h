@@ -1,4 +1,4 @@
-﻿/*
+/*
  * MIT License
  *
  * Copyright (c) 2020 Alvaro Paz <alvaro.paz@cinvestav.edu.mx>, Gustavo Arechavaleta <garechav@cinvestav.edu.mx>
@@ -28,20 +28,15 @@
  *	Class to implement the inverse dynamics.
  */
 
-#ifndef HR_DYNAMICS_INVERSE_DYNAMICS_H
-#define HR_DYNAMICS_INVERSE_DYNAMICS_H
+#ifndef GEOMBD_DYNAMICS_INVERSE_DYNAMICS_H
+#define GEOMBD_DYNAMICS_INVERSE_DYNAMICS_H
 
 #include <memory>
-#include "geombd/types.h"
 #include "geombd/core.h"
-#include "geombd/dynamics/Lie_operators.h"
-#include "geombd/dynamics/kinematics.h"
 
-namespace hr{
-namespace core{
+namespace geo{
 
-
-class InverseDynamics : public LieOperators
+class InverseDynamics : public Kinematics
 {
 
     // --------------------------------------------
@@ -53,7 +48,7 @@ class InverseDynamics : public LieOperators
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW //128-bit alignment
 
     //! Custom constructor.
-    InverseDynamics(std::shared_ptr< MultiBody > robot) : robotKinematics{ robot } {
+    InverseDynamics(std::shared_ptr< MultiBody > robot) : Kinematics(robot) {
 
         this->robot = robot;
         this->n = robot->getDoF();
@@ -161,10 +156,9 @@ class InverseDynamics : public LieOperators
         KCMaux.setIdentity();
         this->KCM += KCMaux;
 
-
         //! Variables for Center of Mass
         this->multibodyMass = robot->getTotalMass();
-        this->G_CoMi.setIdentity();        
+        this->G_CoMi(3) = 1;
 
     }
 
@@ -186,10 +180,6 @@ class InverseDynamics : public LieOperators
 
     //! MultiBody
     std::shared_ptr< MultiBody > robot;
-
-    //! Robot kinematics object
-    Kinematics robotKinematics;
-
 
     ///! Initialize variables
     short int j, i;
@@ -232,10 +222,13 @@ class InverseDynamics : public LieOperators
     //! Variables for Center of Mass
     Vector3r multibodyCoM;          // The multibody center of mass
     real_t multibodyMass;           // The multibody total mass
-    Matrix4r G_CoMi, G_aux;         // Local and global i-th center of mass
+    Vector4r G_CoMi, G_aux;         // Local and global i-th center of mass
+    Matrix4r D_G_x;
     short int tempBodyId;           // Temporal body ID
-    std::vector< MatrixXr > D_G;    // Differentiation of G
+    std::vector< MatrixXr > D_G, D_Gv;    // Differentiation of G
+    std::vector< MatrixXr > DD_G;   // Second differentiation of G
     MatrixXr D_multibodyCoM;        // Differentiation of the multibody center of mass
+    MatrixXr DD_multibodyCoM;        // Second differentiation of the multibody center of mass
     short int sizeDecisionVector, parentBodyId;
 
     //! Flags for updating
@@ -285,7 +278,7 @@ class InverseDynamics : public LieOperators
          /*! \param boolean flag for computing partials
          * \return void
          */
-    void computeCenterOfMass(const bool &computePartialDerivatives);
+    void computeCenterOfMass(const bool &computeFirstDerivative, const bool &computeSecondDerivative);
 
     //! Set generalized coordinates
          /*! \param configuration, generalized velocity, generalized acceleration
@@ -335,6 +328,12 @@ class InverseDynamics : public LieOperators
              */
     MatrixXr getMultibodyCoMDifferentiation(){ return D_multibodyCoM; }
 
+    //! Get the multibody center of mass differentiation
+    /*! \param none
+        \return a MatrixXr
+             */
+    MatrixXr getMultibodyCoMSecondDifferentiation(){ return DD_multibodyCoM; }
+
     //! Get the multibody spatial momentum
     /*! \param none
         \return a SpatialVector
@@ -364,7 +363,6 @@ protected:
 
 
 };
-} // end of namespace core
-} // end of namespace hr
+} // end of namespace geo
 
 #endif // HR_DYNAMICS_INVERSE_DYNAMICS_H

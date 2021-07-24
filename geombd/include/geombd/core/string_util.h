@@ -20,7 +20,7 @@
  */
 
 /**
- *	\file include/openhrc/core/string_util.h
+ *	\file include/geombd/core/string_util.h
  *	\author Gustavo Arechavaleta, Alvaro Paz.
  *	\version 1.0
  *	\date 2020
@@ -28,20 +28,18 @@
  * Inline string manipulation methods.
  */
 
-#ifndef HR_CORE_STRING_UTIL_H
-#define HR_CORE_STRING_UTIL_H
+#ifndef GEOMBD_CORE_STRING_UTIL_H
+#define GEOMBD_CORE_STRING_UTIL_H
 
 #include <string>
 #include <vector>
 #include "Eigen/Dense"
 #include "types.h"
 
-//using namespace std;
+//using namespace geombd { std;
 
-namespace hr
-{
-namespace core
-{
+namespace geo{
+
 inline int Split(const std::string& input, const std::string& delimiter,
                  std::vector<std::string>& results, bool includeEmpties)
 {
@@ -235,6 +233,5 @@ inline AngleAxisr stringToAngleAxisr(bool &status, std::string inputString, cons
 }
 
 
-} // end of namespace core
-} // end of namespace hr
-#endif //HR_CORE_STRING_UTIL_H
+} // end of namespace geo
+#endif //GEOMBD_CORE_STRING_UTIL_H

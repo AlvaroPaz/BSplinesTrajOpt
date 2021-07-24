@@ -28,17 +28,14 @@
  *	Class to implement the Trajectory Optimization -> Direct Collocation
  */
 
-#ifndef HR_TRAJECTORY_OPTIMIZATION_DIRECT_COLLOCATION_H
-#define HR_TRAJECTORY_OPTIMIZATION_DIRECT_COLLOCATION_H
+#ifndef GEOMBD_TRAJECTORY_OPTIMIZATION_DIRECT_COLLOCATION_H
+#define GEOMBD_TRAJECTORY_OPTIMIZATION_DIRECT_COLLOCATION_H
 
 #include <memory>
-#include "geombd/types.h"
 #include "geombd/core.h"
 #include "geombd/dynamics.h"
 
-namespace hr{
-namespace core{
-
+namespace geo{
 
 //! The type of the differentiation
 /*! \ingroup core_module  */
@@ -327,7 +324,6 @@ protected:
 
 
 };
-} // end of namespace core
-} // end of namespace hr
+} // end of namespace geo
 
-#endif // HR_TRAJECTORY_OPTIMIZATION_DIRECT_COLLOCATION_H
+#endif // GEOMBD_TRAJECTORY_OPTIMIZATION_DIRECT_COLLOCATION_H

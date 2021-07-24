@@ -22,7 +22,6 @@
 #include <IpTNLP.hpp>
 
 
-#include "geombd/types.h"
 #include "geombd/core.h"
 #include "geombd/dynamics.h"
 #include "geombd/trajectoryOptimization.h"
@@ -35,7 +34,7 @@ class PracticeNLP : public Ipopt::TNLP
 public:
 
     /** default constructor */
-    PracticeNLP( std::shared_ptr< hr::core::MultiBody > robot, std::shared_ptr< hr::core::robotSettingsTrajectoryOptimization > robotSettings );
+    PracticeNLP( std::shared_ptr< geo::MultiBody > robot, std::shared_ptr< geo::robotSettingsTrajectoryOptimization > robotSettings );
 
     /** default destructor */
     virtual ~PracticeNLP();
@@ -47,16 +46,16 @@ public:
 protected:
 
     //! MultiBody
-    std::shared_ptr< hr::core::MultiBody > robot;
+    std::shared_ptr< geo::MultiBody > robot;
 
     //! Multibody-Nonlinear-Problem object pointer
-    hr::core::DirectCollocation* robotNonlinearProblem;
+    geo::DirectCollocation* robotNonlinearProblem;
 
     //! Smart pointer to robot settings
-    std::shared_ptr< hr::core::robotSettingsTrajectoryOptimization > robotSettings;
+    std::shared_ptr< geo::robotSettingsTrajectoryOptimization > robotSettings;
 
     //! Stack of constraints
-    hr::core::ConstraintsStack StackConstraints;
+    geo::ConstraintsStack StackConstraints;
 
     //! Number of degrees of freedom
     short int nDoF;
@@ -71,25 +70,25 @@ protected:
     int numberConstraints;
 
     //! Time vector
-    hr::VectorXr S;
+    geo::VectorXr S;
 
     //! Initial and final times
-    hr::real_t si, sf;
+    geo::real_t si, sf;
 
     //! Control points
-    hr::VectorXr controlPoints;
+    geo::VectorXr controlPoints;
 
     //! Initial configuration
-    hr::VectorXr initialConfiguration;
+    geo::VectorXr initialConfiguration;
 
     //! Final configuration
-    hr::VectorXr finalConfiguration;
+    geo::VectorXr finalConfiguration;
 
     //! Initial generalized velocity
-    hr::VectorXr initialGeneralizedVelocity;
+    geo::VectorXr initialGeneralizedVelocity;
 
     //! Final generalized velocity
-    hr::VectorXr finalGeneralizedVelocity;
+    geo::VectorXr finalGeneralizedVelocity;
 
     // --------------------------------------------
     // Methods

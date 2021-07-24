@@ -28,14 +28,13 @@
  * OperationalHandle class.
  */
 
-#ifndef HR_CORE_OPERATIONAL_HANDLE_H
-#define HR_CORE_OPERATIONAL_HANDLE_H
+#ifndef GEOMBD_CORE_OPERATIONAL_HANDLE_H
+#define GEOMBD_CORE_OPERATIONAL_HANDLE_H
 
 #include <string>
 #include "types.h"
 
-namespace hr {
-namespace core {
+namespace geo{
 
 //! OperationalHandle class definition
 /*! \ingroup core_module
@@ -150,7 +149,6 @@ public:
     void setOrientation(const Matrix3r &orientation){ this->orientation = orientation; }
 };
 
-} // end of namespace core
-} // end of namespace hr
+} // end of namespace geo
 
-#endif // OPERATIONALHANDLE_H_
+#endif // GEOMBD_CORE_OPERATIONAL_HANDLE_H

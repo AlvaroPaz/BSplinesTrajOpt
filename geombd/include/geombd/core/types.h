@@ -20,7 +20,7 @@
  */
 
 /**
- *	\file include/openhrc/core/types.h
+ *	\file include/geombd/types.h
  *	\author Gustavo Arechavaleta, Alvaro Paz
  *	\version 1.0
  *	\date 2020
@@ -28,53 +28,135 @@
  *	Definition of Types
  */
 
-#ifndef HR_CORE_TYPES_H
-#define HR_CORE_TYPES_H
+#ifndef GEOMBD_TYPES_H
+#define GEOMBD_TYPES_H
 
-#include "geombd/types.h"
+//#define EIGEN_NO_MALLOC
+//#define EIGEN_RUNTIME_NO_MALLOC
+//#define EIGEN_NO_DEBUG
+
+#include "Eigen/Dense"
+#include "Eigen/Sparse"
+#include "Eigen/../unsupported/Eigen/KroneckerProduct"
+//#include "Eigen/src/Core/Map.h"
+#include <chrono>
 
 
-namespace hr{
-
-//! Namespace core. Namespace of the core Module
+//! Namespace geombd. Main namespace of GeoMBD
 /*!
-    More information about core.
+    More information about geombd.
 */
-typedef Eigen::Matrix<real_t, 3 , Eigen::Dynamic , Eigen::RowMajor> Matrix3Xr;
+namespace geo{
 
-namespace core{
+//! Defines TYPE real_t for facilitating the switching between double and float.
+//#ifdef  __USE_SINGLE_PRECISION__
+//        using real_t = float;  //c++11
+//! Defines real_t TYPE as float.
+//typedef float real_t;
+//#else
+//! Defines real_t TYPE as double.
+typedef double real_t;
+//#endif
 
-    //! Type definition of Eigen::AngleAxis< Scalar > as Eigen::AngleAxis< real_t >
-    typedef Eigen::AngleAxis<real_t> AngleAxisr;
+//! Spatial algebra Vector, 6-d vector for spatial transformations.
+typedef Eigen::Matrix< real_t, 6, 1> SpatialVector;
+
+//! Spatial algebra Matrix, 6x6 matrix for spatial transformations.
+typedef Eigen::Matrix< real_t, 6, 6> SpatialMatrix;
+
+//! 9-dimensional vector for spatial transformations.
+typedef Eigen::Matrix< real_t, 9, 1> Vector9r;
+
+//! 9x9 matrix for spatial transformations.
+typedef Eigen::Matrix< real_t, 9, 9> Matrix9r;
+
+//! Derivative of Spatial Vector.
+typedef Eigen::Matrix< real_t, 6, Eigen::Dynamic> D_SpatialVector;
+
+//! Derivative of Spatial Matrix.
+typedef Eigen::Matrix< real_t, Eigen::Dynamic, 6> D_SpatialMatrix;
+
+//! Derivative of scalar real_t
+typedef Eigen::Matrix< real_t, 1, Eigen::Dynamic> D_real_t;
 
 
-//! Namespace nao. Namespace for nao settings
+//! Defines a new eigen-based matrix type that is based on the real_t type.
 /*!
-    More information about nao.
-*/
-namespace nao{
+  Defines a real_t row major matrix. RowMajor defines the way the matrix is stored
+ */
+typedef  Eigen::Matrix<real_t,Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> MatrixXr;
 
-enum body{
-
-            kLeftFoot = 24,
-            kRightFoot = 30,
-            kLeftHand = 13,
-            kRightHand = 18,
-            kTorso = 6,
-            kHead = 8
-};
-
-enum Pose{
-    kStandZero,
-    kStandInit
-};
+typedef  Eigen::Matrix<real_t,Eigen::Dynamic, Eigen::Dynamic, Eigen::ColMajor> MatrixXrColMajor;
 
 
-} // end of namespace nao
+//! Defines a new eigen-based vector type that is based on the real_t type.
+/*!
+  Defines a real_t vector.
+ */
+typedef  Eigen::Matrix<real_t,Eigen::Dynamic, 1> VectorXr;
 
-} // end of namespace core
-
-} // end of namespace hr
+typedef  Eigen::Matrix<real_t, 1, Eigen::Dynamic> RowVectorXr;
 
 
-#endif // HR_CORE_TYPES_H
+//! Defines a new eigen-based vector type that is based on the real_t type.
+/*!
+  Defines a real_t vector of size 3x1.
+ */
+typedef Eigen::Matrix<real_t , 3, 1> Vector3r;
+
+
+//! Defines a new eigen-based vector type that is based on the real_t type.
+/*!
+  Defines a real_t vector of size 2x1.
+ */
+typedef Eigen::Matrix<real_t , 2, 1> Vector2r;
+
+typedef Eigen::Matrix<real_t , 4, 1> Vector4r;
+
+
+//! Defines a new eigen-based matrix type that is based on the real_t type.
+/*!
+  Defines a real_t matrix of size 4x4.
+ */
+typedef Eigen::Matrix<real_t , 4 , 4> Matrix4r;
+
+
+//! Defines a new eigen-based matrix type that is based on the real_t type.
+/*!
+  Defines a real_t matrix of size 3x3.
+ */
+typedef Eigen::Matrix<real_t , 3 , 3> Matrix3r;
+
+
+typedef Eigen::Matrix<real_t , 3 , 3 , Eigen::RowMajor> RowMatrix3r;
+
+
+//! Defines a new eigen-based matrix type that is based on the real_t type.
+/*!
+  Defines a real_t matrix of size 2x2.
+ */
+typedef Eigen::Matrix<real_t , 2 , 2> Matrix2r;
+
+
+//! Defines a new eigen-based matrix type that is based on the real_t type.
+/*!
+  Defines a real_t matrix of size 2x2.
+ */
+typedef Eigen::SparseMatrix< real_t > SparseMatrixXr; // Default ColMajor
+
+
+typedef Eigen::Triplet< real_t > TripletXr;
+
+
+typedef std::vector< TripletXr > TripletXrList;
+
+
+typedef  Eigen::SparseVector< real_t > SparseVectorXr;
+
+
+//! Type definition of Eigen::AngleAxis< Scalar > as Eigen::AngleAxis< real_t >
+typedef Eigen::AngleAxis<real_t> AngleAxisr;
+
+}
+
+#endif // GEOMBD_TYPES_H

@@ -26,17 +26,16 @@
  *	\version 1.0
  *	\date 2020
  *
- * DynamicBody class. It has functions to build a body from a xml file. It is a derived class from body.
+ *  DynamicBody class. It has functions to build a body from a xml file. It is a derived class from body.
  */
 
-#ifndef HR_CORE_DYNAMIC_BODY_H
-#define HR_CORE_DYNAMIC_BODY_H
+#ifndef GEOMBD_CORE_DYNAMIC_BODY_H
+#define GEOMBD_CORE_DYNAMIC_BODY_H
 
 #include "body.h"
 #include "types.h"
 
-namespace hr{
-namespace core{
+namespace geo{
 
 //! DynamicBody class, derived from Body class.
 /*! \ingroup core_module
@@ -83,9 +82,6 @@ protected:
 
     //! body configuration (parameterized by a homogeneous matrix) at home pose w.r.t. the body reference frame.
     Matrix4r homeConfig;
-
-    //! body configuration (parameterized by a homogeneous matrix) w.r.t. the body reference frame.
-    Matrix4r configuration;
 
     //! body global configuration (parameterized by a homogeneous matrix) w.r.t. the inertial reference frame.
     Matrix4r globalConfiguration;
@@ -167,6 +163,67 @@ protected:
 
     //! Differentiation of control variable
     D_real_t Diff_ufd;
+
+
+
+    /// Under development (Enhanced diff)--------------------
+
+public:
+
+    SpatialVector UinvD;
+
+    //! body configuration (parameterized by a homogeneous matrix) w.r.t. the body reference frame.
+    Matrix4r configuration;
+
+    //! Dense terms of differentiated Twist vector
+    D_SpatialVector D_q_V, D_dq_V;
+
+    //! Dense terms of differentiated spatial acceleration bias
+    D_SpatialVector D_q_c, D_dq_c;
+
+    //! Dense terms of differentiated wrench vector bias
+    D_SpatialVector D_q_p, D_dq_p;
+
+    //! Dense term of differentiated vector U (horizontally arranged)
+    D_SpatialVector D_U_h;
+
+    //! Dense term of differentiated vector U (vertically arranged)
+    VectorXr D_U_v;
+
+    //! Dense term of differentiated D^{-1}
+    RowVectorXr D_invD;
+
+    //! Dense terms of differentiated scalar u
+    RowVectorXr D_q_u, D_dq_u;
+
+    //! Dense term of differentiated accumulated inertia matrix
+    D_SpatialMatrix D_Ia;
+
+    //! Dense terms of differentiated accumulated wrench bias
+    D_SpatialVector D_q_Pa, D_dq_Pa;
+
+    //! Dense term of differentiated inertia matrix back-projection
+    D_SpatialMatrix D_In;
+
+    //! Dense terms of differentiated wrench bias back-projection
+    D_SpatialVector D_q_Pn, D_dq_Pn;
+
+    //! Dense terms of differentiated pseudo spatial acceleration
+    D_SpatialVector D_q_dVa, D_dq_dVa;
+
+    //! Dense terms of differentiated joint acceleration
+    RowVectorXr D_q_ddq, D_dq_ddq;
+
+    //! Dense terms of differentiated spatial acceleration
+    D_SpatialVector D_q_dV, D_dq_dV;
+
+    //! Dense term of D_Ia*c (vertically arranged)
+    VectorXr D_IaC_v;
+
+    //! Dense term of D_Ia*c (horizontally arranged)
+    D_SpatialVector D_IaC_h;
+
+
 
     // --------------------------------------------
     // Methods
@@ -379,6 +436,11 @@ public:
     void setDiff_ufd( const D_real_t &Diff_ufd );
 
 
+    //! Set the dense terms of differentiated Twist vector
+    /*! \param two real_t spatial vector Jacobian
+        \return void
+             */
+    void setDiff_x_V( const D_SpatialVector &D_q_V, const D_SpatialVector &D_dq_V );
 
 
     //! Get the mass of the body.
@@ -574,6 +636,5 @@ public:
     D_real_t getDiff_ufd() { return Diff_ufd; }
 
 };
-} // end of namespace core
-} // end of namespace hr
-#endif // HR_CORE_DYNAMIC_BODY_H
+} // end of namespace geo
+#endif // GEOMBD_CORE_DYNAMIC_BODY_H

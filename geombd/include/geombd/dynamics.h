@@ -32,17 +32,15 @@
 /** \defgroup dynamics_module Dynamics module
   * This is the dynamic module of geombd  *
   * \code
-  * #include <openhrc/dynamics.h>
+  * #include <geombd/dynamics.h>
   * \endcode
   */
 
-#ifndef HR_DYNAMICS_H
-#define HR_DYNAMICS_H
+#ifndef GEOMBD_DYNAMICS_H
+#define GEOMBD_DYNAMICS_H
 
 #include "core.h"
-#include "dynamics/Lie_operators.h"
 #include "dynamics/inverse_dynamics.h"
 #include "dynamics/forward_dynamics.h"
-#include "dynamics/kinematics.h"
-#endif // HR_DYNAMICS_H
+#endif // GEOMBD_DYNAMICS_H
 

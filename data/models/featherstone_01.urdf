@@ -1,0 +1,55 @@
+<robot name="figure4.6" type="NADA">
+  <link name="zero{0}"> </link>
+  <link name="shoulder1"> </link>
+  <link name="shoulder2"> </link>
+  <link name="shoulder3"> </link>
+  <link name="four4"> </link>
+  <link name="five5"> </link>
+  <link name="six6"> </link>
+  <link name="seven7"> </link>
+  <link name="eight8"> </link>
+  <joint name="j1" type="fixed">
+      <parent link="zero{0}" />
+    <child link="shoulder1" />
+  </joint>
+  <joint name="j2" type="fixed">
+      <parent link="shoulder1" />
+    <child link="shoulder2" />
+  </joint>
+  <joint name="j3" type="fixed">
+      <parent link="shoulder1" />
+    <child link="shoulder3" />
+  </joint>
+  <joint name="j4" type="fixed">
+      <parent link="four4" />
+    <child link="zero{0}" />
+  </joint>
+  <joint name="j5" type="fixed">
+      <parent link="shoulder3" />
+    <child link="five5" />
+  </joint>
+  <joint name="j6" type="fixed">
+      <parent link="four4" />
+    <child link="six6" />
+  </joint>
+  <joint name="j7" type="fixed">
+      <parent link="four4" />
+    <child link="seven7" />
+  </joint>
+  <joint name="j8" type="fixed">
+      <parent link="four4" />
+    <child link="eight8" />
+  </joint>
+  <joint name="j9" type="fixed">
+      <parent link="shoulder2" />
+    <child link="five5" />
+  </joint>
+  <joint name="j10" type="fixed">
+      <parent link="six6" />
+    <child link="shoulder3" />
+  </joint>
+  <joint name="j11" type="fixed">
+      <parent link="five5" />
+    <child link="seven7" />
+  </joint>
+</robot>

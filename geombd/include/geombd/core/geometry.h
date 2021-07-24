@@ -4,13 +4,13 @@
  * Julio Jarquin <jjarquin.ct@gmail.com>, Gustavo Arechavaleta <garechav@cinvestav.edu.mx> , Gerardo Jarquin
  * CINVESTAV - Saltillo Campus
  *
- * This file is part of OpenHRC
- * OpenHRC is free software; you can redistribute it and/or
+ * This file is part of GeoMBD
+ * GeoMBD is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  *
- * OpenHRC is distributed in the hope that it will be useful,
+ * GeoMBD is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
@@ -31,8 +31,8 @@
  * Geometry classes are implemented using Vector3f for points.
  */
 
-#ifndef HR_CORE_GEOMETRY_H
-#define HR_CORE_GEOMETRY_H
+#ifndef GEOMBD_CORE_GEOMETRY_H
+#define GEOMBD_CORE_GEOMETRY_H
 
 #include <vector>
 //#include <cstdlib>
@@ -42,9 +42,7 @@
 #include "string_util.h"
 #include <iostream>
 
-namespace hr
-{
-namespace core{
+namespace geo{
 
 //! Triangle class.
 /*! \ingroup core_module
@@ -195,6 +193,5 @@ public:
 private:
     bool collisionFlag;
 };
-} // end of namespace core
-} // end of namespace hr
-#endif // HR_CORE_GEOMETRY_H
+} // end of namespace geo
+#endif // GEOMBD_CORE_GEOMETRY_H

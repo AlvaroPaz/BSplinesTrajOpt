@@ -32,10 +32,10 @@ using namespace Eigen;
 #define infty 100000
 
 //! Define time variables
-hr::VectorXr S;
+geo::VectorXr S;
 short int n;
 int M;
-hr::real_t si, sf, s_k;
+geo::real_t si, sf, s_k;
 
 
 int main(){
@@ -47,12 +47,12 @@ int main(){
     myfile.open ("inv_H.txt");
 
     //! Build multibody
-    hr::core::World world = hr::core::World();
+    geo::World world = geo::World();
     std::string sFile = naoFile;
     int robotId = world.getRobotsVector()->size();
-    world.loadMultiBodyURDF(sFile,robotId, hr::core::kNAO);
+    world.loadMultiBodyURDF(sFile,robotId, geo::kNAO);
 
-    std::shared_ptr<hr::core::MultiBody> robot = world.getRobot(0);
+    std::shared_ptr<geo::MultiBody> robot = world.getRobot(0);
 
 
     int t_total = 0;
@@ -61,12 +61,12 @@ int main(){
 
 
     int n = robot->getDoF();
-    hr::VectorXr q(n), dq(n), tau(n);
+    geo::VectorXr q(n), dq(n), tau(n);
 
     q.setRandom();    dq.setRandom();    tau.setRandom();
 
 
-    hr::core::ForwardDynamics robotMotion(robot);
+    geo::ForwardDynamics robotMotion(robot);
     robot->setConfiguration(q);
     robot->setGeneralizedVelocity(dq);
     robot->setGeneralizedTorques(tau);
@@ -90,8 +90,8 @@ int main(){
 
 
     //! Numeric verification through finite differences //!
-    hr::MatrixXr numericGradient(D_ddq.rows(),D_ddq.cols());
-    hr::real_t inc_s = pow(2,-24);
+    geo::MatrixXr numericGradient(D_ddq.rows(),D_ddq.cols());
+    geo::real_t inc_s = pow(2,-24);
 
     t1 = std::chrono::high_resolution_clock::now();
 

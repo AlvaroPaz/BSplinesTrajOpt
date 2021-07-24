@@ -21,21 +21,20 @@
  */
 
 /**
- *	\file include/openhrc/core/world.h
+ *	\file include/geombd/core/world.h
  *	\author Gustavo Arechavaleta, Carla Villanueva, Alvaro Paz.
  *	\version 1.0
  *	\date 2020
  *
  *	World class.
  */
-#ifndef HR_CORE_WORLD_H
-#define HR_CORE_WORLD_H
+#ifndef GEOMBD_CORE_WORLD_H
+#define GEOMBD_CORE_WORLD_H
 
 #include <memory>
 #include "multibody.h"
 
-namespace hr{
-namespace core{
+namespace geo{
 
 //! Enum used to specify the robot type. A robot can be NAO, HRP2, YOUBOT.
 /*! \ingroup core_module  */
@@ -122,8 +121,7 @@ public:
     //void partialCollisionQuery(Body* body, int robotID);
 
 };
-}   // end of namespace core
-}   // end of namesapce hr
+} // end of namespace geo
 
-#endif // HR_CORE_WORLD_H
+#endif // GEOMBD_CORE_WORLD_H
 
