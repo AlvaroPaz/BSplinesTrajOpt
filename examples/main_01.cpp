@@ -105,8 +105,8 @@ int main(int argv, char* argc[])
 
     optSettings->StackConstraints.push_back(geo::constraint_pelvisSymmetry);
 
-    //! WARNING -> Hessian of the Lagrangian is not able to support CoM and Mu constraints
-    //! Be sure "hessian_approximation" is enabled when CoM and Mu are enable too
+    optSettings->StackConstraints.push_back(geo::constraint_centerOfMass);
+//    optSettings->StackConstraints.push_back(geo::constraint_centroidalMomentum);
 
 
     //! Create a new instance of your nlp (use a SmartPtr, not raw)
@@ -128,7 +128,7 @@ int main(int argv, char* argc[])
     app->Options()->SetStringValue("mu_strategy", "adaptive"); ///monotone adaptive
 //    app->Options()->SetStringValue("output_file", "ipopt.out");
     //! limited-memory for BFGS and exact for our analytic
-    app->Options()->SetStringValue("hessian_approximation", "exact");
+    app->Options()->SetStringValue("hessian_approximation", "limited-memory");
 //    app->Options()->SetStringValue("derivative_test", "second-order");
 //    app->Options()->SetStringValue("jac_c_constant", "yes");
 //    app->Options()->SetStringValue("linear_solver", "mumps");
