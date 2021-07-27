@@ -324,7 +324,7 @@ bool PracticeNLP::eval_g(Ipopt::Index n,
     MapVec controlPoints( x, n );
 
     //! constraints evaluation, partial derivatives disabled
-    robotNonlinearProblem->computeConstraints(controlPoints, false, false);
+    robotNonlinearProblem->computeConstraints(controlPoints, false);
 
     //! casting the retrieved constraints
     Map<geo::MatrixXr>( g, m, 1 ) = robotNonlinearProblem->getConstraints();
@@ -359,7 +359,7 @@ bool PracticeNLP::eval_jac_g(Ipopt::Index n,
         MapVec controlPoints( x, n );
 
         //! constraints evaluation, partial derivatives enabled
-        robotNonlinearProblem->computeConstraints(controlPoints, true, false);
+        robotNonlinearProblem->computeConstraints(controlPoints, true);
 
         //! casting the retrieved constraints Jacobian
         Map<geo::MatrixXr>( values, m, n ) = robotNonlinearProblem->getConstraintsJacobian();
@@ -370,6 +370,7 @@ bool PracticeNLP::eval_jac_g(Ipopt::Index n,
 }
 
 //! Hessian of the Lagrangian
+//! WARNING -> Hessian of the Lagrangian is not able to support CoM and Mu constraints
 bool PracticeNLP::eval_h(Ipopt::Index n,
                          const Ipopt::Number* x,
                          bool new_x,
@@ -401,35 +402,25 @@ bool PracticeNLP::eval_h(Ipopt::Index n,
         //! Casting decision variable
         MapVec controlPoints( x, n );
 
-        //! Casting lambda
-        MapVec eigenLambda( lambda, m );
-
         //! Cost-function Hessian evaluation
-        if (new_x) {
-            if (obj_factor!=0) robotNonlinearProblem->computeObjectiveFunction(controlPoints, true, true);
-            robotNonlinearProblem->computeConstraints(controlPoints, true, true);
+        if (new_x && obj_factor!=0) {
+            robotNonlinearProblem->computeObjectiveFunction(controlPoints, true, true);
         }
 
         //! Triangulating and casting the retrieved symmetric Hessian
-        geo::MatrixXr costHessian = obj_factor*robotNonlinearProblem->getCostHessian();
+        geo::MatrixXr costHessian = robotNonlinearProblem->getCostHessian();
 
-        //! Triangulating and casting the retrieved symmetric Hessian
-        geo::MatrixXr gHessian = eigenLambda.transpose()*robotNonlinearProblem->getConstraintsHessian();
-//        std::cout<<" size of lambda = "<<eigenLambda.size()<<" and "<<m<<std::endl;
-        gHessian.resize(n, n);
-
-        //! Hessian of the Lagrangian
-        geo::MatrixXr HessLagrange = costHessian + gHessian;
-
-        geo::VectorXr stackHessLagrange(nele_hess);
+        geo::VectorXr stackCostHessian(nele_hess);
 
         Ipopt::Index k_ = 0;
         for (int i__=0;i__<n;i__++){
-            stackHessLagrange.segment(k_,n-i__) = HessLagrange.diagonal(i__);
+            stackCostHessian.segment(k_,n-i__) = costHessian.diagonal(i__);
             k_ += n-i__;
         }
 
-        Map<geo::MatrixXr>( values, nele_hess, 1 ) = stackHessLagrange;
+        stackCostHessian *= obj_factor;
+
+        Map<geo::MatrixXr>( values, nele_hess, 1 ) = stackCostHessian;
 
     }
 
@@ -469,7 +460,7 @@ void PracticeNLP::finalize_solution(Ipopt::SolverReturn status,
         //    cout << endl << endl << "Gradient of cost function" << endl;
         //    cout << robotNonlinearProblem->getCostGradient().transpose() << endl;
 
-        robotNonlinearProblem->computeConstraints(controlPoints, true, true);
+        robotNonlinearProblem->computeConstraints(controlPoints,true);
         cout << endl << endl << "CONSTRAINTS = ----------------------------------------------" << endl;
         cout << endl << "Initial config: " << endl;         short int ID = 0;
         cout << robotNonlinearProblem->getConstraints().segment(ID,nDoF).transpose() << endl << endl;

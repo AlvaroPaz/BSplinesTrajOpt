@@ -228,7 +228,7 @@ class InverseDynamics : public Kinematics
     std::vector< MatrixXr > D_G, D_Gv;    // Differentiation of G
     std::vector< MatrixXr > DD_G;   // Second differentiation of G
     MatrixXr D_multibodyCoM;        // Differentiation of the multibody center of mass
-    MatrixXr DD_multibodyCoM;        // Second differentiation of the multibody center of mass
+    MatrixXr DD_multibodyCoM;       // Second differentiation of the multibody center of mass
     short int sizeDecisionVector, parentBodyId;
 
     //! Flags for updating
@@ -237,6 +237,7 @@ class InverseDynamics : public Kinematics
     //! Variables for centroidal momentum
     SpatialVector SpatialMomentum, CentroidalMomentum;
     D_SpatialVector D_SpatialMomentum, D_CentroidalMomentum;
+    D_SpatialVector DD_SpatialMomentum, DD_CentroidalMomentum;
 
     public:
 
@@ -266,19 +267,25 @@ class InverseDynamics : public Kinematics
          /*! \param boolean flag for computing partials
          * \return void
          */
-    void computeSpatialMomentum(const bool &computePartialDerivatives);
+    void computeSpatialMomentum(const bool &firstDerivative, const bool &secondDerivative);
 
     //! Compute the multibody centroidal momentum
          /*! \param boolean flag for computing partials
          * \return void
          */
-    void computeCentroidalMomentum(const bool &computePartialDerivatives);
+    void computeCentroidalMomentum(const bool &firstDerivative, const bool &secondDerivative);
 
     //! Compute the center of mass of the whole multibody system
          /*! \param boolean flag for computing partials
          * \return void
          */
     void computeCenterOfMass(const bool &computeFirstDerivative, const bool &computeSecondDerivative);
+
+    //! Compute the center of mass of the whole multibody system
+         /*! \param boolean flag for computing partials
+         * \return void
+         */
+    void computeCenterOfMassII(const bool &computeFirstDerivative, const bool &computeSecondDerivative);
 
     //! Set generalized coordinates
          /*! \param configuration, generalized velocity, generalized acceleration
@@ -320,19 +327,19 @@ class InverseDynamics : public Kinematics
     /*! \param none
         \return a Vector3r
              */
-    Vector3r getMultibodyCoM(){ return multibodyCoM; }
+    Vector3r getRobotCoM(){ return multibodyCoM; }
 
     //! Get the multibody center of mass differentiation
     /*! \param none
         \return a MatrixXr
              */
-    MatrixXr getMultibodyCoMDifferentiation(){ return D_multibodyCoM; }
+    MatrixXr getRobotD_CoM(){ return D_multibodyCoM; }
 
     //! Get the multibody center of mass differentiation
     /*! \param none
         \return a MatrixXr
              */
-    MatrixXr getMultibodyCoMSecondDifferentiation(){ return DD_multibodyCoM; }
+    MatrixXr getRobotDD_CoM(){ return DD_multibodyCoM; }
 
     //! Get the multibody spatial momentum
     /*! \param none
@@ -344,7 +351,13 @@ class InverseDynamics : public Kinematics
     /*! \param none
         \return a D_SpatialVector
              */
-    D_SpatialVector getSpatialMomentumDifferentiation(){ return D_SpatialMomentum; }
+    D_SpatialVector getD_SpatialMomentum(){ return D_SpatialMomentum; }
+
+    //! Get the multibody spatial momentum differentiation
+    /*! \param none
+        \return a D_SpatialVector
+             */
+    D_SpatialVector getDD_SpatialMomentum(){ return DD_SpatialMomentum; }
 
     //! Get the multibody centroidal momentum
     /*! \param none
@@ -356,7 +369,13 @@ class InverseDynamics : public Kinematics
     /*! \param none
         \return a D_SpatialVector
              */
-    D_SpatialVector getCentroidalMomentumDifferentiation(){ return D_CentroidalMomentum; }
+    D_SpatialVector getD_CentroidalMomentum(){ return D_CentroidalMomentum; }
+
+    //! Get the multibody centroidal momentum differentiation
+    /*! \param none
+        \return a D_SpatialVector
+             */
+    D_SpatialVector getDD_CentroidalMomentum(){ return DD_CentroidalMomentum; }
 
 
 protected:

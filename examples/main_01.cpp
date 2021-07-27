@@ -70,7 +70,7 @@ int main(int argv, char* argc[])
 
     optSettings->n = robot->getDoF();
     optSettings->numberControlPoints = 4;//4
-    optSettings->numberPartitions    = 30;//7  30
+    optSettings->numberPartitions    = 7;//7  30
     optSettings->si = 0.0;//0.0
     optSettings->sf = 25.0;//0.1 or 0.2 or 25.0
     optSettings->S = geo::VectorXr::LinSpaced(optSettings->numberPartitions+1, optSettings->si, optSettings->sf);
@@ -128,8 +128,8 @@ int main(int argv, char* argc[])
     app->Options()->SetStringValue("mu_strategy", "adaptive"); ///monotone adaptive
 //    app->Options()->SetStringValue("output_file", "ipopt.out");
     //! limited-memory for BFGS and exact for our analytic
-    app->Options()->SetStringValue("hessian_approximation", "limited-memory");
-//    app->Options()->SetStringValue("derivative_test", "second-order");
+    app->Options()->SetStringValue("hessian_approximation", "exact");
+    app->Options()->SetStringValue("derivative_test", "second-order");
 //    app->Options()->SetStringValue("jac_c_constant", "yes");
 //    app->Options()->SetStringValue("linear_solver", "mumps");
 //    app->Options()->SetStringValue("accept_every_trial_step", "yes");

@@ -175,6 +175,9 @@ class DirectCollocation
     //! Jacobian of constraints
     MatrixXr JacobianConstraints;
 
+    //! Jacobian of constraints
+    MatrixXr HessianConstraints;
+
     //! basis function
     MatrixXr B;
 
@@ -245,7 +248,7 @@ class DirectCollocation
          /*! \param control points c and boolean flag for computing partials
          * \return void
          */
-    void computeConstraints(const MatrixXr &c, const bool &computePartialDerivatives);
+    void computeConstraints(const MatrixXr &c, const bool &computeFirstDerivative, const bool &computeSecondDerivative);
 
     //! Set initial configuration
          /*! \param initial configuration
@@ -300,6 +303,12 @@ class DirectCollocation
         \return a MatrixXr element
              */
     MatrixXr getConstraintsJacobian(){ return JacobianConstraints; }
+
+    //! Get the constraints Hessian
+    /*! \param none
+        \return a MatrixXr element
+             */
+    MatrixXr getConstraintsHessian(){ return HessianConstraints; }
 
     //! Get the basis function
     /*! \param none
