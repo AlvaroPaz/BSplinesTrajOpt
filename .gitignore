@@ -2,4 +2,3 @@
 build-Project-Desktop-Release
 CMakeLists.txt.user
 Project/CMakeLists.txt.user
-geombd/lib/linux-64/libgeombd.a

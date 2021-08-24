@@ -106,7 +106,8 @@ int main(int argv, char* argc[])
     optSettings->StackConstraints.push_back(geo::constraint_pelvisSymmetry);
 
     optSettings->StackConstraints.push_back(geo::constraint_centerOfMass);
-//    optSettings->StackConstraints.push_back(geo::constraint_centroidalMomentum);
+
+    optSettings->StackConstraints.push_back(geo::constraint_centroidalMomentum);
 
 
     //! Create a new instance of your nlp (use a SmartPtr, not raw)

@@ -410,12 +410,11 @@ bool PracticeNLP::eval_h(Ipopt::Index n,
             robotNonlinearProblem->computeConstraints(controlPoints, true, true);
         }
 
-        //! Triangulating and casting the retrieved symmetric Hessian
+        //! Triangulating and casting the retrieved symmetric cost Hessian
         geo::MatrixXr costHessian = obj_factor*robotNonlinearProblem->getCostHessian();
 
-        //! Triangulating and casting the retrieved symmetric Hessian
+        //! Triangulating and casting the retrieved symmetric constraints Hessian
         geo::MatrixXr gHessian = eigenLambda.transpose()*robotNonlinearProblem->getConstraintsHessian();
-//        std::cout<<" size of lambda = "<<eigenLambda.size()<<" and "<<m<<std::endl;
         gHessian.resize(n, n);
 
         //! Hessian of the Lagrangian

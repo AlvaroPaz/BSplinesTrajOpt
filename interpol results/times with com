@@ -1,0 +1,91 @@
+10 collocation points
+//-------------------------------------------------------------------------
+Number of Iterations....: 14
+
+                                   (scaled)                 (unscaled)
+Objective...............:   9.3466785349354126e+01    9.3466785349354126e+01
+Dual infeasibility......:   2.4519316547008349e-05    2.4519316547008349e-05
+Constraint violation....:   0.0000000000000000e+00    0.0000000000000000e+00
+Complementarity.........:   5.3346862994551105e-10    5.3346862994551105e-10
+Overall NLP error.......:   2.4519316547008349e-05    2.4519316547008349e-05
+
+
+Number of objective function evaluations             = 15
+Number of objective gradient evaluations             = 15
+Number of equality constraint evaluations            = 0
+Number of inequality constraint evaluations          = 15
+Number of equality constraint Jacobian evaluations   = 0
+Number of inequality constraint Jacobian evaluations = 15
+Number of Lagrangian Hessian evaluations             = 14
+Total CPU secs in IPOPT (w/o function evaluations)   =      0.096
+Total CPU secs in NLP function evaluations           =      0.210
+
+
+30 collocation points
+//-------------------------------------------------------------------------
+Number of Iterations....: 17
+
+                                   (scaled)                 (unscaled)
+Objective...............:   8.5669853226146387e+01    8.5669853226146387e+01
+Dual infeasibility......:   2.5994751526333771e-07    2.5994751526333771e-07
+Constraint violation....:   0.0000000000000000e+00    0.0000000000000000e+00
+Complementarity.........:   1.0015881224619819e-11    1.0015881224619819e-11
+Overall NLP error.......:   2.5994751526333771e-07    2.5994751526333771e-07
+
+
+Number of objective function evaluations             = 18
+Number of objective gradient evaluations             = 18
+Number of equality constraint evaluations            = 0
+Number of inequality constraint evaluations          = 18
+Number of equality constraint Jacobian evaluations   = 0
+Number of inequality constraint Jacobian evaluations = 18
+Number of Lagrangian Hessian evaluations             = 17
+Total CPU secs in IPOPT (w/o function evaluations)   =      0.219
+Total CPU secs in NLP function evaluations           =      0.519
+
+
+60 collocation points
+//-------------------------------------------------------------------------
+Number of Iterations....: 13
+
+                                   (scaled)                 (unscaled)
+Objective...............:   8.3900537063596872e+01    8.3900537063596872e+01
+Dual infeasibility......:   4.2223392675497890e-05    4.2223392675497890e-05
+Constraint violation....:   0.0000000000000000e+00    0.0000000000000000e+00
+Complementarity.........:   6.5328962910591969e-05    6.5328962910591969e-05
+Overall NLP error.......:   6.5328962910591969e-05    6.5328962910591969e-05
+
+
+Number of objective function evaluations             = 14
+Number of objective gradient evaluations             = 14
+Number of equality constraint evaluations            = 0
+Number of inequality constraint evaluations          = 14
+Number of equality constraint Jacobian evaluations   = 0
+Number of inequality constraint Jacobian evaluations = 14
+Number of Lagrangian Hessian evaluations             = 13
+Total CPU secs in IPOPT (w/o function evaluations)   =      0.374
+Total CPU secs in NLP function evaluations           =      0.676
+
+
+100 collocation points
+//-------------------------------------------------------------------------
+Number of Iterations....: 18
+
+                                   (scaled)                 (unscaled)
+Objective...............:   8.3200513376025157e+01    8.3200513376025157e+01
+Dual infeasibility......:   2.8663303578643716e-05    2.8663303578643716e-05
+Constraint violation....:   0.0000000000000000e+00    0.0000000000000000e+00
+Complementarity.........:   4.8644475409173287e-09    4.8644475409173287e-09
+Overall NLP error.......:   2.8663303578643716e-05    2.8663303578643716e-05
+
+
+Number of objective function evaluations             = 19
+Number of objective gradient evaluations             = 19
+Number of equality constraint evaluations            = 0
+Number of inequality constraint evaluations          = 19
+Number of equality constraint Jacobian evaluations   = 0
+Number of inequality constraint Jacobian evaluations = 19
+Number of Lagrangian Hessian evaluations             = 18
+Total CPU secs in IPOPT (w/o function evaluations)   =      1.116
+Total CPU secs in NLP function evaluations           =      1.395
+
