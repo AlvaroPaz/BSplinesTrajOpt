@@ -50,7 +50,7 @@ using namespace Eigen;
 #include <cassert>
 #include <iostream>
 
-#include "ipopt_interface.hpp"
+#include "ipopt_interface_nao_iner_com.hpp"
 
 typedef Eigen::Map<const geo::VectorXr> MapVec;
 
@@ -168,7 +168,7 @@ bool PracticeNLP::get_bounds_info(Ipopt::Index n,
     geo::real_t dqiBound_u = 1e-3;            //! Velocity 1e-3
     geo::real_t dqfBound_u = 1e-3;
     geo::real_t pelvisBound_u = 1e-3;         //! Pelvis symmetry 1e-10
-    geo::real_t comBound_u = 0.026;           //! CoM    0.026
+    geo::real_t comBound_u = 0.02*100;           //! CoM    0.026
     geo::real_t muBound_u = 1e-2;             //! Centroidal momentum 1e-2
 
     geo::real_t qiBound_l = -1e-3;            //! Position -1e-3
@@ -176,7 +176,7 @@ bool PracticeNLP::get_bounds_info(Ipopt::Index n,
     geo::real_t dqiBound_l = -1e-3;           //! Velocity -1e-3
     geo::real_t dqfBound_l = -1e-3;
     geo::real_t pelvisBound_l = -1e-3;        //! Pelvis symmetry -1e-10
-    geo::real_t comBound_l = -0.026;          //! CoM    -0.026
+    geo::real_t comBound_l = -0.02*100;          //! CoM    -0.026
     geo::real_t muBound_l = -1e-2;            //! Centroidal momentum -1e-2
 
 
@@ -184,16 +184,20 @@ bool PracticeNLP::get_bounds_info(Ipopt::Index n,
     int innerIndex = 0;
     for(geo::ConstraintsStack::iterator it = StackConstraints.begin(); it != StackConstraints.end(); ++it) {
         switch ( *it ) {
-        case geo::constraint_initialConfiguration: {
+        case geo::constraint_initialConfiguration: { // 1 and 1.5 well
             constraintsUP.segment(innerIndex,nDoF) *= qiBound_u;
+            constraintsUP.segment(innerIndex+6,12) = geo::VectorXr::Ones(12,1) * 1.5;
             constraintsLOW.segment(innerIndex,nDoF) *= qiBound_l;
+            constraintsLOW.segment(innerIndex+6,12) = - geo::VectorXr::Ones(12,1) * 1.5;
             innerIndex += nDoF;
 
             break;
         }
         case geo::constraint_finalConfiguration: {
             constraintsUP.segment(innerIndex,nDoF) *= qfBound_u;
+            constraintsUP.segment(innerIndex+6,12) = geo::VectorXr::Ones(12,1) * 1.5;
             constraintsLOW.segment(innerIndex,nDoF) *= qfBound_l;
+            constraintsLOW.segment(innerIndex+6,12) = - geo::VectorXr::Ones(12,1) * 1.5;
             innerIndex += nDoF;
 
             break;
@@ -224,12 +228,16 @@ bool PracticeNLP::get_bounds_info(Ipopt::Index n,
             constraintsLOW.segment(innerIndex,2*S.size()) *= comBound_l;
             innerIndex += 2*S.size();
 
+            std::cout<<"===> Center of Mass Criteria Enabled"<<std::endl;
+
             break;
         }
         case geo::constraint_centroidalMomentum: {
             constraintsUP.segment(innerIndex,6*S.size()) *= muBound_u;
             constraintsLOW.segment(innerIndex,6*S.size()) *= muBound_l;
             innerIndex += 6*S.size();
+
+            std::cout<<"===> Centroidal Momentum Criteria Enabled"<<std::endl;
 
             break;
         }
@@ -548,6 +556,12 @@ void PracticeNLP::finalize_solution(Ipopt::SolverReturn status,
 
     //! Coppelia remote streaming
     if(remoteApiCoppelia){
+        //! B-Spline extension of vector time
+        int prevNumberPartitions = numberPartitions;
+        numberPartitions = 180;  //! 120
+        S = geo::VectorXr::LinSpaced(numberPartitions+1, si, sf);
+        robotNonlinearProblem->buildBasisFunctions(numberControlPoints, S);
+
         geo::MatrixXrColMajor qTrajectory, dqTrajectory, ddqTrajectory;
         qTrajectory = robotNonlinearProblem->getBasis()*controlPoints;
         dqTrajectory = robotNonlinearProblem->getDBasis()*controlPoints;
@@ -582,7 +596,7 @@ void PracticeNLP::finalize_solution(Ipopt::SolverReturn status,
 
         //! Send data init
         for(short int ID = 0 ; ID < nDoF ; ID++){
-            simxSetJointTargetPosition(clientID, IntHandle.at(ID), qTrajectory(ID,0),  simx_opmode_blocking);
+//            simxSetJointTargetPosition(clientID, IntHandle.at(ID), qTrajectory(ID,0),  simx_opmode_blocking);
         }
 
         //! Verify connection
@@ -595,20 +609,35 @@ void PracticeNLP::finalize_solution(Ipopt::SolverReturn status,
             cout << endl << "Connected to Coppelia remote API server" << endl;
         }
 
+//        simxStartSimulation(clientID, simx_opmode_blocking); // start the simulation
+        simxSynchronous(clientID, true); // Enable the synchronous mode
+
+        geo::real_t inc_s = S(1) - S(0);
+        int inc_s_int;  inc_s_int = (int)(inc_s*1000);
+
         //! Trajectory streaming
         for(int s_iter = 0; s_iter < S.size() ; s_iter++){
 
             //! Send data
+            simxPauseCommunication(clientID, true);
             for(short int ID = 0 ; ID < nDoF ; ID++){
-                simxSetJointTargetPosition(clientID, IntHandle.at(ID), qTrajectory(ID,s_iter), simx_opmode_oneshot_wait);
+                simxSetJointTargetPosition(clientID, IntHandle.at(ID), qTrajectory(ID,s_iter), simx_opmode_oneshot);
             }
-//            cout << qTrajectory.col(s_iter).transpose() << endl;
+            simxPauseCommunication(clientID, false);
 
-//            extApi_sleepMs(2000);
+            simxSynchronousTrigger(clientID);
+
+//            std::cout<<"time = "<<inc_s_int<<std::endl;
+//            extApi_sleepMs(inc_s_int);  //! robotized movement
 
         }
         simxFinish(clientID);
         cout << "Streaming finished" << endl;
+
+        //! Restore basis
+        numberPartitions = prevNumberPartitions;
+        S = geo::VectorXr::LinSpaced(numberPartitions+1, si, sf);
+        robotNonlinearProblem->buildBasisFunctions(numberControlPoints, S);
     }
 
 }

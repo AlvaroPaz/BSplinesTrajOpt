@@ -39,11 +39,27 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -lrt")
 
 
+#add_library(ipopt_interface ipopt/ipopt_interface.cpp)
+#target_link_libraries(ipopt_interface ${GeoMBD_LIBRARIES} ${PQP_LIBRARIES} ${Coppelia_LIBRARIES} rt)
 
-add_library(ipopt_interface ipopt/ipopt_interface.cpp)
-target_link_libraries(ipopt_interface ${GeoMBD_LIBRARIES} ${PQP_LIBRARIES} ${Coppelia_LIBRARIES} rt)
+#add_library(ipopt_interface_nao ipopt/ipopt_interface_nao)
+#target_link_libraries(ipopt_interface_nao ${GeoMBD_LIBRARIES} ${PQP_LIBRARIES} ${Coppelia_LIBRARIES} rt)
 
-add_subdirectory(examples)
+#add_library(ipopt_interface_nao_com ipopt/ipopt_interface_nao_com)
+#target_link_libraries(ipopt_interface_nao_com ${GeoMBD_LIBRARIES} ${PQP_LIBRARIES} ${Coppelia_LIBRARIES} rt)
 
+add_library(ipopt_interface_nao_iner_com_01 ipopt/ipopt_interface_nao_iner_com_01)
+target_link_libraries(ipopt_interface_nao_iner_com_01 ${GeoMBD_LIBRARIES} ${PQP_LIBRARIES} ${Coppelia_LIBRARIES} rt)
+
+add_library(ipopt_interface_nao_iner_com ipopt/ipopt_interface_nao_iner_com)
+target_link_libraries(ipopt_interface_nao_iner_com ${GeoMBD_LIBRARIES} ${PQP_LIBRARIES} ${Coppelia_LIBRARIES} rt)
+
+#add_library(ipopt_interface_05 ipopt/ipopt_interface_05)
+#target_link_libraries(ipopt_interface_05 ${GeoMBD_LIBRARIES} ${PQP_LIBRARIES} ${Coppelia_LIBRARIES} rt)
+
+
+#add_subdirectory(examples)
+
+add_subdirectory(examples_com)
 
 

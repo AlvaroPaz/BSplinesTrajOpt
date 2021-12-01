@@ -50,7 +50,7 @@ using namespace Eigen;
 #include <cassert>
 #include <iostream>
 
-#include "ipopt_interface.hpp"
+#include "ipopt_interface_nao_iner_com_01.hpp"
 
 typedef Eigen::Map<const geo::VectorXr> MapVec;
 
@@ -548,6 +548,12 @@ void PracticeNLP::finalize_solution(Ipopt::SolverReturn status,
 
     //! Coppelia remote streaming
     if(remoteApiCoppelia){
+        //! B-Spline extension of vector time
+        int prevNumberPartitions = numberPartitions;
+        numberPartitions = 120;  //! 120
+        S = geo::VectorXr::LinSpaced(numberPartitions+1, si, sf);
+        robotNonlinearProblem->buildBasisFunctions(numberControlPoints, S);
+
         geo::MatrixXrColMajor qTrajectory, dqTrajectory, ddqTrajectory;
         qTrajectory = robotNonlinearProblem->getBasis()*controlPoints;
         dqTrajectory = robotNonlinearProblem->getDBasis()*controlPoints;
@@ -582,7 +588,7 @@ void PracticeNLP::finalize_solution(Ipopt::SolverReturn status,
 
         //! Send data init
         for(short int ID = 0 ; ID < nDoF ; ID++){
-            simxSetJointTargetPosition(clientID, IntHandle.at(ID), qTrajectory(ID,0),  simx_opmode_blocking);
+//            simxSetJointTargetPosition(clientID, IntHandle.at(ID), qTrajectory(ID,0),  simx_opmode_blocking);
         }
 
         //! Verify connection
@@ -595,20 +601,35 @@ void PracticeNLP::finalize_solution(Ipopt::SolverReturn status,
             cout << endl << "Connected to Coppelia remote API server" << endl;
         }
 
+//        simxStartSimulation(clientID, simx_opmode_blocking); // start the simulation
+        simxSynchronous(clientID, true); // Enable the synchronous mode
+
+        geo::real_t inc_s = S(1) - S(0);
+        int inc_s_int;  inc_s_int = (int)(inc_s*1000);
+
         //! Trajectory streaming
         for(int s_iter = 0; s_iter < S.size() ; s_iter++){
 
             //! Send data
+            simxPauseCommunication(clientID, true);
             for(short int ID = 0 ; ID < nDoF ; ID++){
-                simxSetJointTargetPosition(clientID, IntHandle.at(ID), qTrajectory(ID,s_iter), simx_opmode_oneshot_wait);
+                simxSetJointTargetPosition(clientID, IntHandle.at(ID), qTrajectory(ID,s_iter), simx_opmode_oneshot);
             }
-//            cout << qTrajectory.col(s_iter).transpose() << endl;
+            simxPauseCommunication(clientID, false);
 
-//            extApi_sleepMs(2000);
+            simxSynchronousTrigger(clientID);
+
+//            std::cout<<"time = "<<inc_s_int<<std::endl;
+//            extApi_sleepMs(inc_s_int);  //! robotized movement
 
         }
         simxFinish(clientID);
         cout << "Streaming finished" << endl;
+
+        //! Restore basis
+        numberPartitions = prevNumberPartitions;
+        S = geo::VectorXr::LinSpaced(numberPartitions+1, si, sf);
+        robotNonlinearProblem->buildBasisFunctions(numberControlPoints, S);
     }
 
 }

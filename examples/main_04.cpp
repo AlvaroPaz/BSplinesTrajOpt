@@ -13,7 +13,7 @@
  *	\version 1.0
  *	\date 2020
  *
- *	Optimal motion generation for inertial Nao (sequential movements)
+ *	Optimal motion generation for Nao (sequential movements) - 24DoF
  */
 
 #include "geombd/core.h"
@@ -30,13 +30,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-std::string naoFile = "../../BSplinesTrajOpt/data/nao_inertial_python.urdf";
+std::string naoFile = "../../BSplinesTrajOpt/data/nao_python.urdf";
 
 
 #include <IpIpoptApplication.hpp>
 #include <iostream>
 
-#include "../ipopt/ipopt_interface.hpp"
+#include "../ipopt/ipopt_interface_nao.hpp"
 
 
 // using namespace Ipopt;
@@ -73,32 +73,92 @@ int main(int argv, char* argc[])
 
     optSettings->n = robot->getDoF();
     optSettings->numberControlPoints = 4;//4
-    optSettings->numberPartitions    = 25;//7
+    optSettings->numberPartitions    = 30;//7 12
     optSettings->si = 0.0;//0.0
-    optSettings->sf = 1.0;//0.1 or 0.2 or 25.0
+    optSettings->sf = 3.0;//0.1 or 0.2 or 25.0
     optSettings->S = geo::VectorXr::LinSpaced(optSettings->numberPartitions+1, optSettings->si, optSettings->sf);
     optSettings->DifferentiationWRT = geo::wrt_controlPoints;
     robot->setDifferentiationSize( optSettings->n*optSettings->numberControlPoints );
 
 
     geo::VectorXr q_1(optSettings->n,1), q_2(optSettings->n,1), q_3(optSettings->n,1), q_4(optSettings->n,1), q_5(optSettings->n,1), q_6(optSettings->n,1), q_7(optSettings->n,1), q_8(optSettings->n,1), q_9(optSettings->n,1);
-    q_1 << 0, 0, 0, 0, 0, 0, 0, 0, 0, -0.035, 0, 0, 0, 0, 0, 0, 0.035, 0, 0, 0, 0, 0, 0, 0;
 
-    q_2 << -0.379, 0, 0, 0, 0.379, 0, 0, 0, 0, -0.035, 0, 0, 0, 0, 0, 0, 0.035, 0, 0, -0.379, 0, 0, 0, 0.379;
 
-    q_3 << -0.379, 0, 0, 0, 0.379, 0, 0, 0, 0, -0.035, 0, 1.2000, 0.5148, 0, 0, 0, 0.035, 0, 0, -0.79, 0, 0, 0, 0.379;
 
-    q_4 << 0.25, 0.9200, -2.0000, 1.0800, -0.3794, 0, 0, 1.3264, 0, -0.0350, 0, 1.2000, 0.5148, 0, 0.3141, 0, 1.5445, 0, 0, -0.7904, 0, 0, 0, 0.397;
+    q_1 << 0, 0, 0, 0, 0, 0,
+           0, 0,
+           0, 0, 0, 0, 0, 0,
+           0, 0, 0, 0, 0, 0,
+           0, 0.035, 0, -0.035, 0,
+           0, -0.035, 0, 0.035, 0;
 
-    q_5 << 0.25, 0.9200, -2.0000, 1.0800, -0.3794, 0, 0, -0.3141, 0, -1.5445, 0, -1.2000, 0.5148, 0, -1.3264, 0, 0.0350, 0, 0, -0.7904, 0, 0, 0, 0.397;
+    q_2 << 0, 0, 0, 0, 0, 0,
+           0, 0,
+           0.2, 0, -1.535, 2.112, -1.189, 0,
+           0.2, 0, -1.535, 2.12, -1.186, 0,
+           0, 0.035, 0, -0.035, 0,
+           0, -0.035, 0, 0.035, 0;
 
-    q_6 << 0.25, 0, 0, 0, -0.3794, 0, 0, -0.3141, 0, -1.5445, 0, -1.2000, 0.5148, 0, -1.3264, 0, 0.0350, 0, 0, -0.7904, -1.0800, 2.0000, -0.9200, 0.2;
+    q_3 << 0, 0, 0, 0, 0, 0,
+           0, 0,
+           -0.3, 0, -1.535, 2.112, -1.189, 0,
+           -0.3, 0, -1.535, 2.12, -1.186, 0,
+           0, 0.035, 0, -0.035, 0,
+           0, -0.035, 0, 0.035, 0;
 
-    q_7 << 0.25, -1, 0, 0, -0.3794, 0, 0, -0.3141, 0, -1.5445, 0, -1.2000, 0.5148, 0, -1.3264, 0, 0.0350, 0, 0, -0.7904, -1.0800, 2.0000, -0.9200, 0.0;
+    q_4 << 0, 0, 0, 0, 0, 0,
+           0, 0,
+           -0.3, 0, -1.535, 2.112, -1.189, 0,
+           -0.3, 0, -1.535, 2.12, -1.186, 0,
+           -0.11, 0.035, -1.56, -1.56, 0,
+           -0.11, -0.035, 1.56, 1.56, 0;
 
-    q_8 << 0.379, 0, 0, 0, -0.379, 0, 0, 0, 0, -0.035, 0, 0, 0, 0, 0, 0, 0.035, 0, 0, 0.379, 0, 0, 0, -0.379;
+    q_5 << 0, 0, 0, 0, 0, 0,
+           0, -0.671,
+           0, 0, -1.535, -0.092, 0.922, 0,
+           0, 0, 0.484, 0, 0, 0,
+           -0.8, 0.035, -1.56, -1.56, 0,
+           -0.8, -0.035, 1.56, 1.56, 0;
 
-    q_9 << 0, 0, 0, 0, 0, 0, 0, 0, 0, -0.035, 0, 0, 0, 0, 0, 0, 0.035, 0, 0, 0, 0, 0, 0, 0;
+    q_6 << 0, 0, 0, 0, 0, 0,
+           0, -0.671,
+           0, 0, -1.535, -0.092, 0.922, 0,
+           0, 0, -1.535, -0.103, 0.932, 0,
+           -0.8, 0.035, -1.56, -1.56, 0,
+           -0.8, -0.035, 1.56, 1.56, 0;
+
+    q_7 << 0, 0, 0, 0, 0, 0,
+           0, -0.671,
+           0, 0, -1.535, -0.092, 0.922, 0,
+           0, 0, 0.484, 2.1201, 0.9320, 0,
+           -0.8, 0.035, -1.56, -1.56, 0,
+           -0.8, -0.035, 1.56, 1.56, 0;
+
+
+
+
+
+
+
+
+
+//    q_7 << 0, 0, 0, 0, 0, 0,
+//           0, -0.671,
+//           -1.145/2, 0.79, -1.535, -0.092, 0.922, 0,
+//           0.740/2, -0.79, 0.484, 2.1201, 0.9320, 0,
+//           -0.8, 0.035, -1.56, -1.56, 0,
+//           -0.8, -0.035, 1.56, 1.56, 0;
+
+//    q_8 << 0, 0, 0, 0, 0, 0,
+//           0, -0.671,
+//           -1.145/2, 0.79, -1.535, -0.092, 0.922, 0,
+//           0.740/2, -0.79, 0.484, 2.1201, 0.9320, 0,
+//           -0.8+0.4*0, 0.035+1.0, -1.56, -1.56, 0,
+//           -0.8+0.4*0, -0.035-1.4, 1.56, 1.56, 0;
+
+
+
+
 
     std::vector< geo::VectorXr > Q_input;
     Q_input.clear();
@@ -109,8 +169,8 @@ int main(int argv, char* argc[])
     Q_input.push_back(q_5);
     Q_input.push_back(q_6);
     Q_input.push_back(q_7);
-    Q_input.push_back(q_8);
-    Q_input.push_back(q_9);
+//    Q_input.push_back(q_8);
+//    Q_input.push_back(q_9);
 
     //! Fill up stack of constraints
     optSettings->StackConstraints.clear();
@@ -127,7 +187,7 @@ int main(int argv, char* argc[])
     optSettings->StackConstraints.push_back(geo::constraint_finalGeneralizedVelocity);
     optSettings->finalGeneralizedVelocity = geo::VectorXr::Zero(optSettings->n,1);
 
-    optSettings->StackConstraints.push_back(geo::constraint_pelvisSymmetry);
+//    optSettings->StackConstraints.push_back(geo::constraint_pelvisSymmetry);
 
 
     //! Create a new instance of your nlp (use a SmartPtr, not raw)
@@ -145,8 +205,14 @@ int main(int argv, char* argc[])
     //        app->Options()->SetNumericValue("max_cpu_time", 200);
     //        app->Options()->SetIntegerValue("acceptable_iter", 5);
     app->Options()->SetStringValue("mu_strategy", "adaptive"); ///monotone adaptive
-    app->Options()->SetStringValue("output_file", "ipopt.out");
-    app->Options()->SetStringValue("hessian_approximation", "limited-memory"); /// exact
+    //    app->Options()->SetStringValue("output_file", "ipopt.out");
+
+        //! limited-memory for BFGS and exact for our analytic
+        app->Options()->SetStringValue("hessian_approximation", "exact");
+
+        //! finite-difference-values for numeric aprox. and exact for our analytic
+        app->Options()->SetStringValue("jacobian_approximation", "exact");
+
 //    app->Options()->SetStringValue("derivative_test", "second-order");
     //        app->Options()->SetStringValue("jac_c_constant", "yes");
     //        app->Options()->SetStringValue("linear_solver", "mumps");
@@ -172,6 +238,7 @@ int main(int argv, char* argc[])
     for(short int innerIter; innerIter < Q_input.size()-1; innerIter++ ){
         optSettings->initialConfiguration = Q_input.at(innerIter);
         optSettings->finalConfiguration = Q_input.at(innerIter+1);
+
         status = app->OptimizeTNLP(mynlp);
 
         if (status == Ipopt::Solve_Succeeded) {
@@ -188,3 +255,63 @@ int main(int argv, char* argc[])
     return (int) status;
 
 }
+
+
+
+
+//q_1 << 0, 0, 0, 0, 0, 0,
+//       0, 0,
+//       0, 0, 0, 0, 0, 0,
+//       0, 0, 0, 0, 0, 0,
+//       0, 0.035, 0, -0.035, 0,
+//       0, -0.035, 0, 0.035, 0;
+
+//q_2 << 0, 0, 0, 0, 0, 0,
+//       0, 0,
+//       0.2, 0, -1.535, 2.112, -1.189, 0,
+//       0.2, 0, -1.535, 2.12, -1.186, 0,
+//       0, 0.035, 0, -0.035, 0,
+//       0, -0.035, 0, 0.035, 0;
+
+//q_3 << 0, 0, 0, 0, 0, 0,
+//       0, 0,
+//       -0.3, 0, -1.535, 2.112, -1.189, 0,
+//       -0.3, 0, -1.535, 2.12, -1.186, 0,
+//       0, 0.035, 0, -0.035, 0,
+//       0, -0.035, 0, 0.035, 0;
+
+//q_4 << 0, 0, 0, 0, 0, 0,
+//       0, 0,
+//       -0.3, 0, -1.535, 2.112, -1.189, 0,
+//       -0.3, 0, -1.535, 2.12, -1.186, 0,
+//       -0.11, 0.035, -1.56, -1.56, 0,
+//       -0.11, -0.035, 1.56, 1.56, 0;
+
+//q_5 << 0, 0, 0, 0, 0, 0,
+//       0, -0.671,
+//       0, 0, -1.535, -0.092, 0.922, 0,
+//       0, 0, 0.484, 0, 0, 0,
+//       -0.8, 0.035, -1.56, -1.56, 0,
+//       -0.8, -0.035, 1.56, 1.56, 0;
+
+//q_6 << 0, 0, 0, 0, 0, 0,
+//       0, -0.671,
+//       0, 0, -1.535, -0.092, 0.922, 0,
+//       0, 0, 0.484, 2.1201, 0.9320, 0,
+//       -0.8, 0.035, -1.56, -1.56, 0,
+//       -0.8, -0.035, 1.56, 1.56, 0;
+
+//q_7 << 0, 0, 0, 0, 0, 0,
+//       0, -0.671,
+//       -1.145/2, 0.79, -1.535, -0.092, 0.922, 0,
+//       0.740/2, -0.79, 0.484, 2.1201, 0.9320, 0,
+//       -0.8, 0.035, -1.56, -1.56, 0,
+//       -0.8, -0.035, 1.56, 1.56, 0;
+
+//q_8 << 0, 0, 0, 0, 0, 0,
+//       0, -0.671,
+//       -1.145/2, 0.79, -1.535, -0.092, 0.922, 0,
+//       0.740/2, -0.79, 0.484, 2.1201, 0.9320, 0,
+//       -0.8+0.4*0, 0.035+1.0, -1.56, -1.56, 0,
+//       -0.8+0.4*0, -0.035-1.4, 1.56, 1.56, 0;
+

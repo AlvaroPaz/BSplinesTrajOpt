@@ -50,7 +50,7 @@ using namespace Eigen;
 #include <cassert>
 #include <iostream>
 
-#include "ipopt_interface.hpp"
+#include "ipopt_interface_nao.hpp"
 
 typedef Eigen::Map<const geo::VectorXr> MapVec;
 
@@ -533,10 +533,6 @@ void PracticeNLP::finalize_solution(Ipopt::SolverReturn status,
         dqTrajectory.resize(nDoF,S.size());
         ddqTrajectory.resize(nDoF,S.size());
 
-        qTrajectory.topRows(6) *= -1;
-        dqTrajectory.topRows(6) *= -1;
-        ddqTrajectory.topRows(6) *= -1;
-
 //        myfile_1.open ("qData.txt");
 //        myfile_2.open ("dqData.txt");
 //        myfile_3.open ("ddqData.txt");
@@ -548,6 +544,12 @@ void PracticeNLP::finalize_solution(Ipopt::SolverReturn status,
 
     //! Coppelia remote streaming
     if(remoteApiCoppelia){
+        //! B-Spline extension of vector time
+        int prevNumberPartitions = numberPartitions;
+        numberPartitions = 2;  //! 120
+        S = geo::VectorXr::LinSpaced(numberPartitions+1, si, sf);
+        robotNonlinearProblem->buildBasisFunctions(numberControlPoints, S);
+
         geo::MatrixXrColMajor qTrajectory, dqTrajectory, ddqTrajectory;
         qTrajectory = robotNonlinearProblem->getBasis()*controlPoints;
         dqTrajectory = robotNonlinearProblem->getDBasis()*controlPoints;
@@ -557,59 +559,68 @@ void PracticeNLP::finalize_solution(Ipopt::SolverReturn status,
         dqTrajectory.resize(nDoF,S.size());
         ddqTrajectory.resize(nDoF,S.size());
 
-        qTrajectory.topRows(6) *= -1;
-        dqTrajectory.topRows(6) *= -1;
-        ddqTrajectory.topRows(6) *= -1;
-
         int portNb = 19997;
         int clientID = simxStart("127.0.0.1", portNb, true, true, 2500, 5);
 
-        std::vector< const simxChar* > CharHandle{"LAnkleRoll3","LAnklePitch3","LKneePitch3","LHipPitch3","LHipRoll3","LHipYawPitch3",
+        std::vector< const simxChar* > CharHandle{"HeadYaw","HeadPitch",
+                                                  "LHipYawPitch3","LHipRoll3","LHipPitch3","LKneePitch3","LAnklePitch3","LAnkleRoll3",
+                                                  "RHipYawPitch3","RHipRoll3","RHipPitch3","RKneePitch3","RAnklePitch3","RAnkleRoll3",
                                                   "LShoulderPitch3","LShoulderRoll3","LElbowYaw3","LElbowRoll3","LWristYaw3",
-                                                  "HeadYaw","HeadPitch",
-                                                  "RShoulderPitch3","RShoulderRoll3","RElbowYaw3","RElbowRoll3","RWristYaw3",
-                                                  "RHipYawPitch3","RHipRoll3","RHipPitch3","RKneePitch3","RAnklePitch3","RAnkleRoll3"};
+                                                  "RShoulderPitch3","RShoulderRoll3","RElbowYaw3","RElbowRoll3","RWristYaw3"};
 
-        std::vector< int > IntHandle(nDoF);
-        std::vector< int > FeasibleHandle(nDoF);
+        std::vector< int > IntHandle(nDoF-6);
+        std::vector< int > FeasibleHandle(nDoF-6);
         int FeasibilitySum = 0;
 
         //! Enable handles
-        for(short int ID = 0 ; ID < nDoF ; ID++){
+        for(short int ID = 0 ; ID < nDoF-6 ; ID++){
             FeasibleHandle.at(ID) = simxGetObjectHandle(clientID, CharHandle.at(ID), &IntHandle.at(ID), simx_opmode_blocking);
             FeasibilitySum += FeasibleHandle.at(ID);
-        }
+          }
 
         //! Send data init
-        for(short int ID = 0 ; ID < nDoF ; ID++){
-            simxSetJointTargetPosition(clientID, IntHandle.at(ID), qTrajectory(ID,0),  simx_opmode_blocking);
-        }
+        for(short int ID = 0 ; ID < nDoF-6 ; ID++){
+//            simxSetJointTargetPosition(clientID, IntHandle.at(ID), qTrajectory(ID+6,0),  simx_opmode_blocking);
+          }
 
         //! Verify connection
-//        cout << "client: " << clientID << endl;
-//        cout << "feasibility: " << FeasibilitySum << endl;
         if (clientID == -1 || FeasibilitySum){
             cout << endl << "Coppelia connection failed" << endl;
             simxFinish(clientID);
-        } else {
+          } else {
             cout << endl << "Connected to Coppelia remote API server" << endl;
-        }
+          }
+
+//        simxStartSimulation(clientID, simx_opmode_blocking); // start the simulation
+        simxSynchronous(clientID, true); // Enable the synchronous mode
+
+        geo::real_t inc_s = S(1) - S(0);
+        int inc_s_int;  inc_s_int = (int)(inc_s*1000);
 
         //! Trajectory streaming
         for(int s_iter = 0; s_iter < S.size() ; s_iter++){
 
             //! Send data
-            for(short int ID = 0 ; ID < nDoF ; ID++){
-                simxSetJointTargetPosition(clientID, IntHandle.at(ID), qTrajectory(ID,s_iter), simx_opmode_oneshot_wait);
-            }
-//            cout << qTrajectory.col(s_iter).transpose() << endl;
+            simxPauseCommunication(clientID, true);
+            for(short int ID = 0 ; ID < nDoF-6 ; ID++){
+                simxSetJointTargetPosition(clientID, IntHandle.at(ID), qTrajectory(ID+6,s_iter), simx_opmode_oneshot);
+//                simxSetJointTargetVelocity(clientID, IntHandle.at(ID), dqTrajectory(ID+6,s_iter), simx_opmode_oneshot);
+              }
+            simxPauseCommunication(clientID, false);
 
-//            extApi_sleepMs(2000);
+            simxSynchronousTrigger(clientID);
 
-        }
+//            std::cout<<"time = "<<inc_s_int<<std::endl;
+            extApi_sleepMs(inc_s_int);  //! robotized movement
+
+          }
         simxFinish(clientID);
         cout << "Streaming finished" << endl;
-    }
+
+        //! Restore basis
+        numberPartitions = prevNumberPartitions;
+        S = geo::VectorXr::LinSpaced(numberPartitions+1, si, sf);
+        robotNonlinearProblem->buildBasisFunctions(numberControlPoints, S);
+      }
 
 }
-

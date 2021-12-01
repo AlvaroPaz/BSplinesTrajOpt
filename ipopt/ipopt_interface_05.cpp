@@ -50,7 +50,7 @@ using namespace Eigen;
 #include <cassert>
 #include <iostream>
 
-#include "ipopt_interface.hpp"
+#include "ipopt_interface_05.hpp"
 
 typedef Eigen::Map<const geo::VectorXr> MapVec;
 
@@ -184,16 +184,20 @@ bool PracticeNLP::get_bounds_info(Ipopt::Index n,
     int innerIndex = 0;
     for(geo::ConstraintsStack::iterator it = StackConstraints.begin(); it != StackConstraints.end(); ++it) {
         switch ( *it ) {
-        case geo::constraint_initialConfiguration: {
+        case geo::constraint_initialConfiguration: { // en 2 no se cae
             constraintsUP.segment(innerIndex,nDoF) *= qiBound_u;
+            constraintsUP.segment(innerIndex+6,12) = geo::VectorXr::Ones(12,1) * 2.5;
             constraintsLOW.segment(innerIndex,nDoF) *= qiBound_l;
+            constraintsLOW.segment(innerIndex+6,12) = - geo::VectorXr::Ones(12,1) * 2.5;
             innerIndex += nDoF;
 
             break;
         }
         case geo::constraint_finalConfiguration: {
             constraintsUP.segment(innerIndex,nDoF) *= qfBound_u;
+            constraintsUP.segment(innerIndex+6,12) = geo::VectorXr::Ones(12,1) * 2.5;
             constraintsLOW.segment(innerIndex,nDoF) *= qfBound_l;
+            constraintsLOW.segment(innerIndex+6,12) = - geo::VectorXr::Ones(12,1) * 2.5;
             innerIndex += nDoF;
 
             break;
@@ -324,7 +328,7 @@ bool PracticeNLP::eval_g(Ipopt::Index n,
     MapVec controlPoints( x, n );
 
     //! constraints evaluation, partial derivatives disabled
-    robotNonlinearProblem->computeConstraints(controlPoints, false);
+    robotNonlinearProblem->computeConstraints(controlPoints, false, false);
 
     //! casting the retrieved constraints
     Map<geo::MatrixXr>( g, m, 1 ) = robotNonlinearProblem->getConstraints();
@@ -359,7 +363,7 @@ bool PracticeNLP::eval_jac_g(Ipopt::Index n,
         MapVec controlPoints( x, n );
 
         //! constraints evaluation, partial derivatives enabled
-        robotNonlinearProblem->computeConstraints(controlPoints, true);
+        robotNonlinearProblem->computeConstraints(controlPoints, true, false);
 
         //! casting the retrieved constraints Jacobian
         Map<geo::MatrixXr>( values, m, n ) = robotNonlinearProblem->getConstraintsJacobian();
@@ -370,7 +374,6 @@ bool PracticeNLP::eval_jac_g(Ipopt::Index n,
 }
 
 //! Hessian of the Lagrangian
-//! WARNING -> Hessian of the Lagrangian is not able to support CoM and Mu constraints
 bool PracticeNLP::eval_h(Ipopt::Index n,
                          const Ipopt::Number* x,
                          bool new_x,
@@ -402,25 +405,34 @@ bool PracticeNLP::eval_h(Ipopt::Index n,
         //! Casting decision variable
         MapVec controlPoints( x, n );
 
+        //! Casting lambda
+        MapVec eigenLambda( lambda, m );
+
         //! Cost-function Hessian evaluation
-        if (new_x && obj_factor!=0) {
-            robotNonlinearProblem->computeObjectiveFunction(controlPoints, true, true);
+        if (new_x) {
+            if (obj_factor!=0) robotNonlinearProblem->computeObjectiveFunction(controlPoints, true, true);
+            robotNonlinearProblem->computeConstraints(controlPoints, true, true);
         }
 
-        //! Triangulating and casting the retrieved symmetric Hessian
-        geo::MatrixXr costHessian = robotNonlinearProblem->getCostHessian();
+        //! Triangulating and casting the retrieved symmetric cost Hessian
+        geo::MatrixXr costHessian = obj_factor*robotNonlinearProblem->getCostHessian();
 
-        geo::VectorXr stackCostHessian(nele_hess);
+        //! Triangulating and casting the retrieved symmetric constraints Hessian
+        geo::MatrixXr gHessian = eigenLambda.transpose()*robotNonlinearProblem->getConstraintsHessian();
+        gHessian.resize(n, n);
+
+        //! Hessian of the Lagrangian
+        geo::MatrixXr HessLagrange = costHessian + gHessian;
+
+        geo::VectorXr stackHessLagrange(nele_hess);
 
         Ipopt::Index k_ = 0;
         for (int i__=0;i__<n;i__++){
-            stackCostHessian.segment(k_,n-i__) = costHessian.diagonal(i__);
+            stackHessLagrange.segment(k_,n-i__) = HessLagrange.diagonal(i__);
             k_ += n-i__;
         }
 
-        stackCostHessian *= obj_factor;
-
-        Map<geo::MatrixXr>( values, nele_hess, 1 ) = stackCostHessian;
+        Map<geo::MatrixXr>( values, nele_hess, 1 ) = stackHessLagrange;
 
     }
 
@@ -445,9 +457,9 @@ void PracticeNLP::finalize_solution(Ipopt::SolverReturn status,
 
     bool printSolution, saveData, BSplineInterpolation, remoteApiCoppelia;
     printSolution           = false;
-    saveData                = true;
+    saveData                = false;
     BSplineInterpolation    = false;
-    remoteApiCoppelia       = false;
+    remoteApiCoppelia       = true;
 
     //! Print optimal result
     if(printSolution){
@@ -460,7 +472,7 @@ void PracticeNLP::finalize_solution(Ipopt::SolverReturn status,
         //    cout << endl << endl << "Gradient of cost function" << endl;
         //    cout << robotNonlinearProblem->getCostGradient().transpose() << endl;
 
-        robotNonlinearProblem->computeConstraints(controlPoints,true);
+        robotNonlinearProblem->computeConstraints(controlPoints, true, true);
         cout << endl << endl << "CONSTRAINTS = ----------------------------------------------" << endl;
         cout << endl << "Initial config: " << endl;         short int ID = 0;
         cout << robotNonlinearProblem->getConstraints().segment(ID,nDoF).transpose() << endl << endl;
@@ -512,14 +524,30 @@ void PracticeNLP::finalize_solution(Ipopt::SolverReturn status,
 
     //! B-Spline extension of vector time
     if(BSplineInterpolation){
-        numberPartitions = 79;
+        numberPartitions = 99;
         S = geo::VectorXr::LinSpaced(numberPartitions+1, si, sf);
         robotNonlinearProblem->buildBasisFunctions(numberControlPoints, S);
 
-        geo::MatrixXrColMajor aux2 = robotNonlinearProblem->getBasis()*controlPoints;
-        aux2.resize(nDoF,S.size());
-        cout << endl << endl << "Optimal trajectory = " << endl;
-        cout << aux2.transpose() << endl;
+        geo::MatrixXrColMajor qTrajectory, dqTrajectory, ddqTrajectory;
+        qTrajectory = robotNonlinearProblem->getBasis()*controlPoints;
+        dqTrajectory = robotNonlinearProblem->getDBasis()*controlPoints;
+        ddqTrajectory = robotNonlinearProblem->getDDBasis()*controlPoints;
+
+        qTrajectory.resize(nDoF,S.size());
+        dqTrajectory.resize(nDoF,S.size());
+        ddqTrajectory.resize(nDoF,S.size());
+
+        qTrajectory.topRows(6) *= -1;
+        dqTrajectory.topRows(6) *= -1;
+        ddqTrajectory.topRows(6) *= -1;
+
+//        myfile_1.open ("qData.txt");
+//        myfile_2.open ("dqData.txt");
+//        myfile_3.open ("ddqData.txt");
+
+        myfile_1 << qTrajectory << endl;
+        myfile_2 << dqTrajectory << endl;
+        myfile_3 << ddqTrajectory << endl;
     }
 
     //! Coppelia remote streaming
