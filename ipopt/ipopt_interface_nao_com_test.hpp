@@ -16,8 +16,8 @@
  *	Header class to include the Trajectory Optimization Problem into the Ipopt Solver
  */
 
-#ifndef IPOPT_INTERFACE_NAO_INER_COM_01_HPP
-#define IPOPT_INTERFACE_NAO_INER_COM_01_HPP
+#ifndef IPOPT_INTERFACE_NAO_COM_TEST_HPP
+#define IPOPT_INTERFACE_NAO_COM_TEST_HPP
 
 #include <IpTNLP.hpp>
 
@@ -72,7 +72,7 @@ protected:
     //! Time vector
     geo::VectorXr S;
 
-    //! Weights vector
+    //! Weights vector for cost function
     geo::VectorXr weights;
 
     //! Initial and final times

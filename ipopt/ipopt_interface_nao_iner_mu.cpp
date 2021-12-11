@@ -50,7 +50,7 @@ using namespace Eigen;
 #include <cassert>
 #include <iostream>
 
-#include "ipopt_interface_nao_iner_com.hpp"  // it said "ipopt_interface_nao_com_test.hpp" instead
+#include "ipopt_interface_nao_iner_mu.hpp"
 
 typedef Eigen::Map<const geo::VectorXr> MapVec;
 
@@ -549,7 +549,7 @@ void PracticeNLP::finalize_solution(Ipopt::SolverReturn status,
     if(remoteApiCoppelia){
         //! B-Spline extension of vector time
         int prevNumberPartitions = numberPartitions;
-        numberPartitions = 220;  //! 220
+        numberPartitions = 75;  //! 220
         S = geo::VectorXr::LinSpaced(numberPartitions+1, si, sf);
         robotNonlinearProblem->buildBasisFunctions(numberControlPoints, S);
 

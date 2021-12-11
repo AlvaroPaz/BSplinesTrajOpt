@@ -8,12 +8,12 @@
 // Modified: brian paden Aug-2017
 
 /**
- *	\file examples_com/main_com_02.cpp
+ *	\file examples_com/main_com_03.cpp
  *	\author Alvaro Paz, Gustavo Arechavaleta
  *	\version 1.0
  *	\date 2020
  *
- *	Optimal motion generation for inertial Nao (sequential movements) -> Airplane pose
+ *	Optimal motion generation for inertial Nao (sequential movements) -> Leg to Front
  */
 
 #include "geombd/core.h"
@@ -87,16 +87,16 @@ int main(int argv, char* argc[])
     //! Boundaries
     geo::VectorXr bound_aux;
     bound_aux = geo::VectorXr::Ones(optSettings->n,1) * 1e-3;
-    bound_aux.segment(6,12) = geo::VectorXr::Ones(12,1) * 1.5;
+    bound_aux.segment(6,12) = geo::VectorXr::Ones(12,1) * 1.2;
 
     optSettings->qiBound_u = bound_aux;
     optSettings->qfBound_u = bound_aux;
-    optSettings->comBound_u = geo::VectorXr::Ones(2,1) * 0.015;
+    optSettings->comBound_u = geo::VectorXr::Ones(2,1) * 0.026*2.8;
     optSettings->muBound_u = 1e-2;
 
     optSettings->qiBound_l = -bound_aux;
     optSettings->qfBound_l = -bound_aux;
-    optSettings->comBound_l = -geo::VectorXr::Ones(2,1) * 0.015;
+    optSettings->comBound_l = -geo::VectorXr::Ones(2,1) * 0.026*2.8;
     optSettings->muBound_l = -1e-2;
 
 
@@ -108,10 +108,10 @@ int main(int argv, char* argc[])
 
     q_3 << -0.379, 0, 0, 0, 0.379, 0, 0, 0, 0, -0.035, 0, 0, 0, 0, 0, 0, 0.035, 0, 0, -0.79, 0, 0, 0, 0.379;
     //! Airplane like pose
-    q_4 << -0.3000, 0, 0, 0, 0, 0, 1.4112, 0.2730, -1.3730, -0.9863, -0.0062, 0.0015, 0.0214, 1.3945, -0.2731, 1.3698, 0.9879, -0.0077, 0, 0.0016, -0.4510, 1.5, -0.3528, 0;
+    q_4 << -0.3000, 0, 0, 0, 0, 0, 1.4112, 0.2730, -1.3730, -0.9863, -0.0062, 0.0015, 0.0214, -0.5, 0, 1.3698, 0.9879, -0.0077, 0, 0.0016, -0.4510, 1.5, -0.3528, 0;
 
-    q_5 << -0.10, 0.3513, -1.5000, 1.5300, 0, 0, 1.4112, 1.2000, -1.3730, -0.9863, -0.0062, 0.0015, -0.6000, 1.3945, -1.2000, 1.3698, 0.9879, -0.0077, 0, 0.0016, 0.4800, 1.0, -0.3528, 0;
-//-0.20  -0.10  (0.39)
+    q_5 << -0.20, 0.33, 0.092, -0.48, 0, 0, 1.4112, 1.2000, -1.3730, -0.9863, -0.0062, 0.0015, -0.6000, 1.3945, -1.2000, 1.3698, 0.9879, -0.0077, 0, 0.0016, -1.53, 0.0, 0.93, 0;
+//-0.20  -0.10  (0.39) (0.30)
     std::vector< geo::VectorXr > Q_input;
     Q_input.clear();
     Q_input.push_back(q_4);

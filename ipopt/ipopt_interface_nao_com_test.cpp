@@ -50,7 +50,7 @@ using namespace Eigen;
 #include <cassert>
 #include <iostream>
 
-#include "ipopt_interface_nao_iner_com.hpp"  // it said "ipopt_interface_nao_com_test.hpp" instead
+#include "ipopt_interface_nao.hpp"
 
 typedef Eigen::Map<const geo::VectorXr> MapVec;
 
@@ -72,9 +72,6 @@ PracticeNLP::PracticeNLP( std::shared_ptr< geo::MultiBody > robot, std::shared_p
 
     // Retrieve time vector
     this->S = robotSettings->S;
-
-    // Retrieve the weights vector
-    this->weights = robotSettings->weights;
 
     // Motion object instance
     this->robotNonlinearProblem = new geo::DirectCollocation( robot, robotSettings );
@@ -166,29 +163,47 @@ bool PracticeNLP::get_bounds_info(Ipopt::Index n,
     constraintsLOW.setOnes();
 
     //! This is customizable too
+    geo::real_t qiBound_u = 1e-3;             //! Position 1e-3
+    geo::real_t qfBound_u = 1e-3;
     geo::real_t dqiBound_u = 1e-3;            //! Velocity 1e-3
     geo::real_t dqfBound_u = 1e-3;
     geo::real_t pelvisBound_u = 1e-3;         //! Pelvis symmetry 1e-10
+    geo::real_t comBound_u = 0.026;           //! CoM    0.026
+    geo::real_t muBound_u = 1e-2;             //! Centroidal momentum 1e-2
 
+    geo::real_t qiBound_l = -1e-3;            //! Position -1e-3
+    geo::real_t qfBound_l = -1e-3;
     geo::real_t dqiBound_l = -1e-3;           //! Velocity -1e-3
     geo::real_t dqfBound_l = -1e-3;
     geo::real_t pelvisBound_l = -1e-3;        //! Pelvis symmetry -1e-10
+    geo::real_t comBound_l = -0.026;          //! CoM    -0.026
+    geo::real_t muBound_l = -1e-2;            //! Centroidal momentum -1e-2
 
 
     //! Fill up constraints
     int innerIndex = 0;
     for(geo::ConstraintsStack::iterator it = StackConstraints.begin(); it != StackConstraints.end(); ++it) {
         switch ( *it ) {
-        case geo::constraint_initialConfiguration: { // 1 and 1.5 well
-            constraintsUP.segment(innerIndex,nDoF) = robotSettings->qiBound_u;
-            constraintsLOW.segment(innerIndex,nDoF) = robotSettings->qiBound_l;
+        case geo::constraint_initialConfiguration: {
+            constraintsUP.segment(innerIndex,nDoF) *= qiBound_u;
+            constraintsUP.segment(innerIndex+6,2) = geo::VectorXr::Ones(2,1) * 1.5;
+            constraintsUP.segment(innerIndex+20,10) = geo::VectorXr::Ones(10,1) * 1.5;
+
+            constraintsLOW.segment(innerIndex,nDoF) *= qiBound_l;
+            constraintsLOW.segment(innerIndex+6,2) = - geo::VectorXr::Ones(2,1) * 1.5;
+            constraintsLOW.segment(innerIndex+20,10) = - geo::VectorXr::Ones(10,1) * 1.5;
             innerIndex += nDoF;
 
             break;
         }
         case geo::constraint_finalConfiguration: {
-            constraintsUP.segment(innerIndex,nDoF) = robotSettings->qfBound_u;
-            constraintsLOW.segment(innerIndex,nDoF) = robotSettings->qfBound_l;
+            constraintsUP.segment(innerIndex,nDoF) *= qfBound_u;
+            constraintsUP.segment(innerIndex+6,2) = geo::VectorXr::Ones(2,1) * 1.5;
+            constraintsUP.segment(innerIndex+20,10) = geo::VectorXr::Ones(10,1) * 1.5;
+
+            constraintsLOW.segment(innerIndex,nDoF) *= qfBound_l;
+            constraintsLOW.segment(innerIndex+6,2) = - geo::VectorXr::Ones(2,1) * 1.5;
+            constraintsLOW.segment(innerIndex+20,10) = - geo::VectorXr::Ones(10,1) * 1.5;
             innerIndex += nDoF;
 
             break;
@@ -215,20 +230,16 @@ bool PracticeNLP::get_bounds_info(Ipopt::Index n,
             break;
         }
         case geo::constraint_centerOfMass: {
-            constraintsUP.segment(innerIndex,2*S.size()) = robotSettings->comBound_u.replicate( S.size(), 1 );
-            constraintsLOW.segment(innerIndex,2*S.size()) = robotSettings->comBound_l.replicate( S.size(), 1 );
+            constraintsUP.segment(innerIndex,2*S.size()) *= comBound_u;
+            constraintsLOW.segment(innerIndex,2*S.size()) *= comBound_l;
             innerIndex += 2*S.size();
-
-            std::cout<<"===> Center of Mass Criteria Enabled"<<std::endl;
 
             break;
         }
         case geo::constraint_centroidalMomentum: {
-            constraintsUP.segment(innerIndex,6*S.size()) *= robotSettings->muBound_u;
-            constraintsLOW.segment(innerIndex,6*S.size()) *= robotSettings->muBound_l;
+            constraintsUP.segment(innerIndex,6*S.size()) *= muBound_u;
+            constraintsLOW.segment(innerIndex,6*S.size()) *= muBound_l;
             innerIndex += 6*S.size();
-
-            std::cout<<"===> Centroidal Momentum Criteria Enabled"<<std::endl;
 
             break;
         }
@@ -281,7 +292,7 @@ bool PracticeNLP::eval_f(Ipopt::Index n,
     MapVec controlPoints( x, n );
 
     //! objective function evaluation, partial derivatives disabled
-    robotNonlinearProblem->computeObjectiveFunction(controlPoints, weights, false, false);
+    robotNonlinearProblem->computeObjectiveFunction(controlPoints, false, false);
 
     //! retrieve cost
     obj_value = robotNonlinearProblem->getCost();
@@ -300,7 +311,7 @@ bool PracticeNLP::eval_grad_f(Ipopt::Index n, const Ipopt::Number* x, bool new_x
     MapVec controlPoints( x, n );
 
     //! objective function evaluation, first partial derivative enabled
-    robotNonlinearProblem->computeObjectiveFunction(controlPoints, weights, true, false);
+    robotNonlinearProblem->computeObjectiveFunction(controlPoints, true, false);
 
     //! casting the retrieved cost gradient
     Map<geo::MatrixXr>( grad_f, 1, n ) = robotNonlinearProblem->getCostGradient();
@@ -405,7 +416,7 @@ bool PracticeNLP::eval_h(Ipopt::Index n,
 
         //! Cost-function Hessian evaluation
         if (new_x) {
-            if (obj_factor!=0) robotNonlinearProblem->computeObjectiveFunction(controlPoints, weights, true, true);
+            if (obj_factor!=0) robotNonlinearProblem->computeObjectiveFunction(controlPoints, true, true);
             robotNonlinearProblem->computeConstraints(controlPoints, true, true);
         }
 
@@ -461,7 +472,7 @@ void PracticeNLP::finalize_solution(Ipopt::SolverReturn status,
         cout << endl << endl << "Solution of the primal variables, x" << endl;
         cout << controlPoints.transpose() << endl;
 
-        robotNonlinearProblem->computeObjectiveFunction(controlPoints, weights, true, false);
+        robotNonlinearProblem->computeObjectiveFunction(controlPoints, true, false);
         cout << endl << endl << "f(x*) = " << endl;
         cout << robotNonlinearProblem->getCost() << endl;
         //    cout << endl << endl << "Gradient of cost function" << endl;
@@ -532,10 +543,6 @@ void PracticeNLP::finalize_solution(Ipopt::SolverReturn status,
         dqTrajectory.resize(nDoF,S.size());
         ddqTrajectory.resize(nDoF,S.size());
 
-        qTrajectory.topRows(6) *= -1;
-        dqTrajectory.topRows(6) *= -1;
-        ddqTrajectory.topRows(6) *= -1;
-
 //        myfile_1.open ("qData.txt");
 //        myfile_2.open ("dqData.txt");
 //        myfile_3.open ("ddqData.txt");
@@ -549,7 +556,7 @@ void PracticeNLP::finalize_solution(Ipopt::SolverReturn status,
     if(remoteApiCoppelia){
         //! B-Spline extension of vector time
         int prevNumberPartitions = numberPartitions;
-        numberPartitions = 220;  //! 220
+        numberPartitions = 180;  //! 120
         S = geo::VectorXr::LinSpaced(numberPartitions+1, si, sf);
         robotNonlinearProblem->buildBasisFunctions(numberControlPoints, S);
 
@@ -562,43 +569,37 @@ void PracticeNLP::finalize_solution(Ipopt::SolverReturn status,
         dqTrajectory.resize(nDoF,S.size());
         ddqTrajectory.resize(nDoF,S.size());
 
-        qTrajectory.topRows(6) *= -1;
-        dqTrajectory.topRows(6) *= -1;
-        ddqTrajectory.topRows(6) *= -1;
-
         int portNb = 19997;
         int clientID = simxStart("127.0.0.1", portNb, true, true, 2500, 5);
 
-        std::vector< const simxChar* > CharHandle{"LAnkleRoll3","LAnklePitch3","LKneePitch3","LHipPitch3","LHipRoll3","LHipYawPitch3",
+        std::vector< const simxChar* > CharHandle{"HeadYaw","HeadPitch",
+                                                  "LHipYawPitch3","LHipRoll3","LHipPitch3","LKneePitch3","LAnklePitch3","LAnkleRoll3",
+                                                  "RHipYawPitch3","RHipRoll3","RHipPitch3","RKneePitch3","RAnklePitch3","RAnkleRoll3",
                                                   "LShoulderPitch3","LShoulderRoll3","LElbowYaw3","LElbowRoll3","LWristYaw3",
-                                                  "HeadYaw","HeadPitch",
-                                                  "RShoulderPitch3","RShoulderRoll3","RElbowYaw3","RElbowRoll3","RWristYaw3",
-                                                  "RHipYawPitch3","RHipRoll3","RHipPitch3","RKneePitch3","RAnklePitch3","RAnkleRoll3"};
+                                                  "RShoulderPitch3","RShoulderRoll3","RElbowYaw3","RElbowRoll3","RWristYaw3"};
 
-        std::vector< int > IntHandle(nDoF);
-        std::vector< int > FeasibleHandle(nDoF);
+        std::vector< int > IntHandle(nDoF-6);
+        std::vector< int > FeasibleHandle(nDoF-6);
         int FeasibilitySum = 0;
 
         //! Enable handles
-        for(short int ID = 0 ; ID < nDoF ; ID++){
+        for(short int ID = 0 ; ID < nDoF-6 ; ID++){
             FeasibleHandle.at(ID) = simxGetObjectHandle(clientID, CharHandle.at(ID), &IntHandle.at(ID), simx_opmode_blocking);
             FeasibilitySum += FeasibleHandle.at(ID);
-        }
+          }
 
         //! Send data init
-        for(short int ID = 0 ; ID < nDoF ; ID++){
-//            simxSetJointTargetPosition(clientID, IntHandle.at(ID), qTrajectory(ID,0),  simx_opmode_blocking);
-        }
+        for(short int ID = 0 ; ID < nDoF-6 ; ID++){
+//            simxSetJointTargetPosition(clientID, IntHandle.at(ID), qTrajectory(ID+6,0),  simx_opmode_blocking);
+          }
 
         //! Verify connection
-//        cout << "client: " << clientID << endl;
-//        cout << "feasibility: " << FeasibilitySum << endl;
         if (clientID == -1 || FeasibilitySum){
             cout << endl << "Coppelia connection failed" << endl;
             simxFinish(clientID);
-        } else {
+          } else {
             cout << endl << "Connected to Coppelia remote API server" << endl;
-        }
+          }
 
 //        simxStartSimulation(clientID, simx_opmode_blocking); // start the simulation
         simxSynchronous(clientID, true); // Enable the synchronous mode
@@ -611,9 +612,10 @@ void PracticeNLP::finalize_solution(Ipopt::SolverReturn status,
 
             //! Send data
             simxPauseCommunication(clientID, true);
-            for(short int ID = 0 ; ID < nDoF ; ID++){
-                simxSetJointTargetPosition(clientID, IntHandle.at(ID), qTrajectory(ID,s_iter), simx_opmode_oneshot);
-            }
+            for(short int ID = 0 ; ID < nDoF-6 ; ID++){
+                simxSetJointTargetPosition(clientID, IntHandle.at(ID), qTrajectory(ID+6,s_iter), simx_opmode_oneshot);
+//                simxSetJointTargetVelocity(clientID, IntHandle.at(ID), dqTrajectory(ID+6,s_iter), simx_opmode_oneshot);
+              }
             simxPauseCommunication(clientID, false);
 
             simxSynchronousTrigger(clientID);
@@ -621,7 +623,7 @@ void PracticeNLP::finalize_solution(Ipopt::SolverReturn status,
 //            std::cout<<"time = "<<inc_s_int<<std::endl;
 //            extApi_sleepMs(inc_s_int);  //! robotized movement
 
-        }
+          }
         simxFinish(clientID);
         cout << "Streaming finished" << endl;
 
@@ -629,7 +631,6 @@ void PracticeNLP::finalize_solution(Ipopt::SolverReturn status,
         numberPartitions = prevNumberPartitions;
         S = geo::VectorXr::LinSpaced(numberPartitions+1, si, sf);
         robotNonlinearProblem->buildBasisFunctions(numberControlPoints, S);
-    }
+      }
 
 }
-

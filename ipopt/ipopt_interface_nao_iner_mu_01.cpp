@@ -50,7 +50,7 @@ using namespace Eigen;
 #include <cassert>
 #include <iostream>
 
-#include "ipopt_interface_nao_iner_com.hpp"  // it said "ipopt_interface_nao_com_test.hpp" instead
+#include "ipopt_interface_nao_iner_mu_01.hpp"
 
 typedef Eigen::Map<const geo::VectorXr> MapVec;
 
@@ -73,7 +73,7 @@ PracticeNLP::PracticeNLP( std::shared_ptr< geo::MultiBody > robot, std::shared_p
     // Retrieve time vector
     this->S = robotSettings->S;
 
-    // Retrieve the weights vector
+    // Retrieve the weights vector for cost function
     this->weights = robotSettings->weights;
 
     // Motion object instance
@@ -166,29 +166,37 @@ bool PracticeNLP::get_bounds_info(Ipopt::Index n,
     constraintsLOW.setOnes();
 
     //! This is customizable too
+    geo::real_t qiBound_u = 1e-3;             //! Position 1e-3
+    geo::real_t qfBound_u = 1e-3;
     geo::real_t dqiBound_u = 1e-3;            //! Velocity 1e-3
     geo::real_t dqfBound_u = 1e-3;
     geo::real_t pelvisBound_u = 1e-3;         //! Pelvis symmetry 1e-10
+    geo::real_t comBound_u = 0.026;           //! CoM    0.026
+    geo::real_t muBound_u = 1e-2;             //! Centroidal momentum 1e-2
 
+    geo::real_t qiBound_l = -1e-3;            //! Position -1e-3
+    geo::real_t qfBound_l = -1e-3;
     geo::real_t dqiBound_l = -1e-3;           //! Velocity -1e-3
     geo::real_t dqfBound_l = -1e-3;
     geo::real_t pelvisBound_l = -1e-3;        //! Pelvis symmetry -1e-10
+    geo::real_t comBound_l = -0.026;          //! CoM    -0.026
+    geo::real_t muBound_l = -1e-2;            //! Centroidal momentum -1e-2
 
 
     //! Fill up constraints
     int innerIndex = 0;
     for(geo::ConstraintsStack::iterator it = StackConstraints.begin(); it != StackConstraints.end(); ++it) {
         switch ( *it ) {
-        case geo::constraint_initialConfiguration: { // 1 and 1.5 well
-            constraintsUP.segment(innerIndex,nDoF) = robotSettings->qiBound_u;
-            constraintsLOW.segment(innerIndex,nDoF) = robotSettings->qiBound_l;
+        case geo::constraint_initialConfiguration: {
+            constraintsUP.segment(innerIndex,nDoF) *= qiBound_u;
+            constraintsLOW.segment(innerIndex,nDoF) *= qiBound_l;
             innerIndex += nDoF;
 
             break;
         }
         case geo::constraint_finalConfiguration: {
-            constraintsUP.segment(innerIndex,nDoF) = robotSettings->qfBound_u;
-            constraintsLOW.segment(innerIndex,nDoF) = robotSettings->qfBound_l;
+            constraintsUP.segment(innerIndex,nDoF) *= qfBound_u;
+            constraintsLOW.segment(innerIndex,nDoF) *= qfBound_l;
             innerIndex += nDoF;
 
             break;
@@ -215,20 +223,16 @@ bool PracticeNLP::get_bounds_info(Ipopt::Index n,
             break;
         }
         case geo::constraint_centerOfMass: {
-            constraintsUP.segment(innerIndex,2*S.size()) = robotSettings->comBound_u.replicate( S.size(), 1 );
-            constraintsLOW.segment(innerIndex,2*S.size()) = robotSettings->comBound_l.replicate( S.size(), 1 );
+            constraintsUP.segment(innerIndex,2*S.size()) *= comBound_u;
+            constraintsLOW.segment(innerIndex,2*S.size()) *= comBound_l;
             innerIndex += 2*S.size();
-
-            std::cout<<"===> Center of Mass Criteria Enabled"<<std::endl;
 
             break;
         }
         case geo::constraint_centroidalMomentum: {
-            constraintsUP.segment(innerIndex,6*S.size()) *= robotSettings->muBound_u;
-            constraintsLOW.segment(innerIndex,6*S.size()) *= robotSettings->muBound_l;
+            constraintsUP.segment(innerIndex,6*S.size()) *= muBound_u;
+            constraintsLOW.segment(innerIndex,6*S.size()) *= muBound_l;
             innerIndex += 6*S.size();
-
-            std::cout<<"===> Centroidal Momentum Criteria Enabled"<<std::endl;
 
             break;
         }
@@ -549,7 +553,7 @@ void PracticeNLP::finalize_solution(Ipopt::SolverReturn status,
     if(remoteApiCoppelia){
         //! B-Spline extension of vector time
         int prevNumberPartitions = numberPartitions;
-        numberPartitions = 220;  //! 220
+        numberPartitions = 120;  //! 120
         S = geo::VectorXr::LinSpaced(numberPartitions+1, si, sf);
         robotNonlinearProblem->buildBasisFunctions(numberControlPoints, S);
 

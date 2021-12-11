@@ -16,8 +16,8 @@
  *	Header class to include the Trajectory Optimization Problem into the Ipopt Solver
  */
 
-#ifndef IPOPT_INTERFACE_NAO_INER_COM_01_HPP
-#define IPOPT_INTERFACE_NAO_INER_COM_01_HPP
+#ifndef IPOPT_INTERFACE_NAO_INER_MU_01_HPP
+#define IPOPT_INTERFACE_NAO_INER_MU_01_HPP
 
 #include <IpTNLP.hpp>
 

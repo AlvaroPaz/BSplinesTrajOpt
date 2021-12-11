@@ -75,7 +75,8 @@ struct robotSettingsTrajectoryOptimization {
     int numberPartitions;                   // number of partitions
     int numberConstraints;                  // number of constraints
     real_t si, sf;                          // initial and final time
-    VectorXr S;                             // vector time parameter    
+    VectorXr S;                             // vector time parameter
+    VectorXr weights;                       // weights vector for cost function
 
     //! Differentiate with respect to
     DifferentiationType DifferentiationWRT;
@@ -85,6 +86,17 @@ struct robotSettingsTrajectoryOptimization {
     VectorXr finalConfiguration;
     VectorXr initialGeneralizedVelocity;
     VectorXr finalGeneralizedVelocity;
+
+    //! Upper and lower tolerances for baundaries
+    VectorXr qiBound_u;
+    VectorXr qfBound_u;
+    VectorXr comBound_u;
+    real_t muBound_u;
+
+    VectorXr qiBound_l;
+    VectorXr qfBound_l;
+    VectorXr comBound_l;
+    real_t muBound_l;
 
     //! Constraints customization
     ConstraintsStack StackConstraints;
@@ -242,7 +254,7 @@ class DirectCollocation
          /*! \param control points c and boolean flags for computing partial derivatives
          * \return void
          */
-    void computeObjectiveFunction(const MatrixXr &c, const bool &computeFirstDerivative, const bool &computeSecondDerivative);
+    void computeObjectiveFunction(const MatrixXr &c, const VectorXr &weights, const bool &computeFirstDerivative, const bool &computeSecondDerivative);
 
     //! Compute constraints of NLP
          /*! \param control points c and boolean flag for computing partials

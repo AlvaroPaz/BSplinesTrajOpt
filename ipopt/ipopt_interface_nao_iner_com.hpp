@@ -72,6 +72,9 @@ protected:
     //! Time vector
     geo::VectorXr S;
 
+    //! Weights vector for cost function
+    geo::VectorXr weights;
+
     //! Initial and final times
     geo::real_t si, sf;
 

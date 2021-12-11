@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 4.10.2, 2021-12-01T02:09:49. -->
+<!-- Written by QtCreator 4.10.2, 2021-12-10T22:26:47. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -309,8 +309,8 @@
     <value type="int" key="PE.EnvironmentAspect.Base">2</value>
     <valuelist type="QVariantList" key="PE.EnvironmentAspect.Changes"/>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName"></value>
-    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">com_example_01</value>
-    <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">CMakeProjectManager.CMakeRunConfiguration./home/alvaropaz/Dropbox/PhD/qt_projects/GitHub/BSplinesTrajOpt/examples_com///::///com_example_01</value>
+    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">mu_example_01</value>
+    <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">CMakeProjectManager.CMakeRunConfiguration./home/alvaropaz/Dropbox/PhD/qt_projects/GitHub/BSplinesTrajOpt/examples_mu///::///mu_example_01</value>
     <value type="QString" key="RunConfiguration.Arguments"></value>
     <value type="uint" key="RunConfiguration.QmlDebugServerPort">3768</value>
     <value type="bool" key="RunConfiguration.UseCppDebugger">false</value>
@@ -319,7 +319,7 @@
     <value type="bool" key="RunConfiguration.UseQmlDebugger">false</value>
     <value type="bool" key="RunConfiguration.UseQmlDebuggerAuto">true</value>
     <value type="QString" key="RunConfiguration.WorkingDirectory"></value>
-    <value type="QString" key="RunConfiguration.WorkingDirectory.default">/home/alvaropaz/Dropbox/PhD/qt_projects/GitHub/build-BSplinesTrajOpt-Desktop-Release/examples_com</value>
+    <value type="QString" key="RunConfiguration.WorkingDirectory.default">/home/alvaropaz/Dropbox/PhD/qt_projects/GitHub/build-BSplinesTrajOpt-Desktop-Release/examples_mu</value>
    </valuemap>
    <valuemap type="QVariantMap" key="ProjectExplorer.Target.RunConfiguration.1">
     <value type="QString" key="Analyzer.Perf.CallgraphMode">dwarf</value>
@@ -374,8 +374,8 @@
     <value type="int" key="PE.EnvironmentAspect.Base">2</value>
     <valuelist type="QVariantList" key="PE.EnvironmentAspect.Changes"/>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName"></value>
-    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">com_example_02</value>
-    <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">CMakeProjectManager.CMakeRunConfiguration./home/alvaropaz/Dropbox/PhD/qt_projects/GitHub/BSplinesTrajOpt/examples_com///::///com_example_02</value>
+    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">mu_example_02</value>
+    <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">CMakeProjectManager.CMakeRunConfiguration./home/alvaropaz/Dropbox/PhD/qt_projects/GitHub/BSplinesTrajOpt/examples_mu///::///mu_example_02</value>
     <value type="QString" key="RunConfiguration.Arguments"></value>
     <value type="uint" key="RunConfiguration.QmlDebugServerPort">3768</value>
     <value type="bool" key="RunConfiguration.UseCppDebugger">false</value>
@@ -384,7 +384,7 @@
     <value type="bool" key="RunConfiguration.UseQmlDebugger">false</value>
     <value type="bool" key="RunConfiguration.UseQmlDebuggerAuto">true</value>
     <value type="QString" key="RunConfiguration.WorkingDirectory"></value>
-    <value type="QString" key="RunConfiguration.WorkingDirectory.default">/home/alvaropaz/Dropbox/PhD/qt_projects/GitHub/build-BSplinesTrajOpt-Desktop-Release/examples_com</value>
+    <value type="QString" key="RunConfiguration.WorkingDirectory.default">/home/alvaropaz/Dropbox/PhD/qt_projects/GitHub/build-BSplinesTrajOpt-Desktop-Release/examples_mu</value>
    </valuemap>
    <value type="int" key="ProjectExplorer.Target.RunConfigurationCount">2</value>
   </valuemap>
