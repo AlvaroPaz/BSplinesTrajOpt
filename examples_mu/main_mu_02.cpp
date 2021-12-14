@@ -75,7 +75,7 @@ int main(int argv, char* argc[])
     optSettings->numberControlPoints = 4;//4
     optSettings->numberPartitions    = 7;//7  15
     optSettings->si = 0.0;//0.0
-    optSettings->sf = 10.0;//0.1 or 0.2 or 25.0  5.0
+    optSettings->sf = 1.0;//0.1 or 0.2 or 25.0  5.0
     optSettings->S = geo::VectorXr::LinSpaced(optSettings->numberPartitions+1, optSettings->si, optSettings->sf);
     optSettings->DifferentiationWRT = geo::wrt_controlPoints;
     geo::VectorXr weights;  weights.setOnes(optSettings->n);
@@ -92,12 +92,12 @@ int main(int argv, char* argc[])
     optSettings->qiBound_u = bound_aux;
     optSettings->qfBound_u = bound_aux;
     optSettings->comBound_u = geo::VectorXr::Ones(2,1) * 0.015;
-    optSettings->muBound_u = 0.1;
+    optSettings->muBound_u = 0.3;
 
     optSettings->qiBound_l = -bound_aux;
     optSettings->qfBound_l = -bound_aux;
     optSettings->comBound_l = -geo::VectorXr::Ones(2,1) * 0.015;
-    optSettings->muBound_l = -0.1;
+    optSettings->muBound_l = -0.3;
 
 
     //! Generalized Configurations
@@ -108,9 +108,11 @@ int main(int argv, char* argc[])
 
     q_3 << -0.379, 0, 0, 0, 0.379, 0, 0, 0, 0, -0.035, 0, 0, 0, 0, 0, 0, 0.035, 0, 0, -0.79, 0, 0, 0, 0.379;
     //! Airplane like pose
-    q_4 << -0.20, 0.3513, -1.5000, 1.5300, 0, 0, 1.4112, 1.2000, -1.3730, -0.9863, -0.0062, 0.0015, -0.6000, 1.3945, -1.2000, 1.3698, 0.9879, -0.0077, 0, 0.0016, 0.4800, 1.0, -0.3528, 0;
+    //q_4 << -0.20, 0.3513-0.35, -1.5000+0.8, 1.5300-0.35, 0, 0, 1.4112, 1.2000, -1.3730, -0.9863, -0.0062, 0.0015, -0.6000, 1.3945, -1.2000, 1.3698, 0.9879, -0.0077, 0, 0.0016, 0.4800, 1.0, -0.3528, 0;
 
-    q_5 << -0.300, 0.30, 0, 0, 0, 0, 0, 0, 0, -0.045, 0, 0, 0, 0, 0, 0, 0.045, 0, 0, 0.0016, -0.4510, 1.5, -0.3528, 0;
+    q_4 << -0.20, 0.33-0.15, 0.092, -0.48, 0, 0, 1.4112, 1.2000, -1.3730, -0.9863, -0.0062, 0.0015, -0.6000, 1.3945, -1.2000, 1.3698, 0.9879, -0.0077, 0, 0.0016, 0.4800, 2.12, -1.18, 0;
+
+    q_5 << -0.20, 0.33-0.15, 0.092, -0.48, 0, 0, 1.4112, 1.2000, -1.3730, -0.9863, -0.0062, 0.0015, -0.6000, 1.3945, -1.2000, 1.3698, 0.9879, -0.0077, 0, 0.0016-0.1, -1.53, 0.0, 0.93, 0;
 
     std::vector< geo::VectorXr > Q_input;
     Q_input.clear();

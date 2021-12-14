@@ -553,7 +553,7 @@ void PracticeNLP::finalize_solution(Ipopt::SolverReturn status,
     if(remoteApiCoppelia){
         //! B-Spline extension of vector time
         int prevNumberPartitions = numberPartitions;
-        numberPartitions = 120;  //! 120
+        numberPartitions = 90;  //! 120
         S = geo::VectorXr::LinSpaced(numberPartitions+1, si, sf);
         robotNonlinearProblem->buildBasisFunctions(numberControlPoints, S);
 

@@ -166,12 +166,12 @@ bool PracticeNLP::get_bounds_info(Ipopt::Index n,
     constraintsLOW.setOnes();
 
     //! This is customizable too
-    geo::real_t dqiBound_u = 1e-3;            //! Velocity 1e-3
-    geo::real_t dqfBound_u = 1e-3;
+    geo::real_t dqiBound_u = 1e3;            //! Velocity 1e-3
+    geo::real_t dqfBound_u = 1e3;
     geo::real_t pelvisBound_u = 1e-3;         //! Pelvis symmetry 1e-10
 
-    geo::real_t dqiBound_l = -1e-3;           //! Velocity -1e-3
-    geo::real_t dqfBound_l = -1e-3;
+    geo::real_t dqiBound_l = -1e3;           //! Velocity -1e-3
+    geo::real_t dqfBound_l = -1e3;
     geo::real_t pelvisBound_l = -1e-3;        //! Pelvis symmetry -1e-10
 
 
@@ -549,7 +549,7 @@ void PracticeNLP::finalize_solution(Ipopt::SolverReturn status,
     if(remoteApiCoppelia){
         //! B-Spline extension of vector time
         int prevNumberPartitions = numberPartitions;
-        numberPartitions = 75;  //! 220
+        numberPartitions = 80;  //! (300)  (80)
         S = geo::VectorXr::LinSpaced(numberPartitions+1, si, sf);
         robotNonlinearProblem->buildBasisFunctions(numberControlPoints, S);
 
