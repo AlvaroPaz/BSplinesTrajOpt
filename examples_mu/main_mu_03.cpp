@@ -8,12 +8,12 @@
 // Modified: brian paden Aug-2017
 
 /**
- *	\file examples_com/main_com_06.cpp
+ *	\file examples_com/main_com_02.cpp
  *	\author Alvaro Paz, Gustavo Arechavaleta
  *	\version 1.0
  *	\date 2020
  *
- *	Optimal motion generation for inertial Nao (sequential movements) -> Sky
+ *	Optimal motion generation for inertial Nao (sequential movements) -> Kick pose
  */
 
 #include "geombd/core.h"
@@ -36,7 +36,7 @@ std::string naoFile = "../../BSplinesTrajOpt/data/nao_inertial_python.urdf";
 #include <IpIpoptApplication.hpp>
 #include <iostream>
 
-#include "../ipopt/ipopt_interface_nao_iner_com.hpp"
+#include "../ipopt/ipopt_interface_nao_iner_mu.hpp"
 
 
 // using namespace Ipopt;
@@ -74,30 +74,37 @@ int main(int argv, char* argc[])
     optSettings->n = robot->getDoF();
     optSettings->numberControlPoints = 4;//4
     optSettings->numberPartitions    = 7;//7  15
-    optSettings->si = 0.0;//0.0
-    optSettings->sf = 10.0;//0.1 or 0.2 or 25.0  5.0
+    optSettings->si = 0.0;
+    optSettings->sf = 2.0;  // (0.2 works well)
     optSettings->S = geo::VectorXr::LinSpaced(optSettings->numberPartitions+1, optSettings->si, optSettings->sf);
     optSettings->DifferentiationWRT = geo::wrt_controlPoints;
     geo::VectorXr weights;  weights.setOnes(optSettings->n);
-    weights.segment(0,6) *= 0.01;
-//    weights.tail(6) *= 0.01;
+    weights.segment(0,6) *= 1e-4;
+    weights.tail(6) *= 1e-4;
     optSettings->weights = weights;
+    optSettings->numberFinalInterpolation = 50;  //! (300)  (80) (20 for 1 sec of streaming)
     robot->setDifferentiationSize( optSettings->n*optSettings->numberControlPoints );
+
+//    //! Simulation at 4 seconds of streaming
+//    optSettings->sf = 4.0;
+//    optSettings->numberFinalInterpolation = 150;
 
     //! Boundaries
     geo::VectorXr bound_aux;
     bound_aux = geo::VectorXr::Ones(optSettings->n,1) * 1e-3;
-    bound_aux.segment(6,12) = geo::VectorXr::Ones(12,1) * 1.5;
+    bound_aux.segment(5,14) = geo::VectorXr::Ones(14,1) * 1.5;  //! Relaxed joints
+    bound_aux.segment(6,5) = geo::VectorXr::Ones(5,1) * 2.0;  //! Relaxed joints hand
+    bound_aux(11) = 1e-3;
 
     optSettings->qiBound_u = bound_aux;
     optSettings->qfBound_u = bound_aux;
-    optSettings->comBound_u = geo::VectorXr::Ones(2,1) * 0.015;
-    optSettings->muBound_u = 1e-2;
+    optSettings->comBound_u = geo::Vector2r::Ones() * 0.026 * 0.5;
+    optSettings->muBound_u = geo::SpatialVector::Ones() * 0.01;
 
     optSettings->qiBound_l = -bound_aux;
     optSettings->qfBound_l = -bound_aux;
-    optSettings->comBound_l = -geo::VectorXr::Ones(2,1) * 0.015;
-    optSettings->muBound_l = -1e-2;
+    optSettings->comBound_l = - geo::Vector2r::Ones() * 0.026 * 0.5;
+    optSettings->muBound_l = - geo::SpatialVector::Ones() * 0.01;  //  0.014
 
 
     //! Generalized Configurations
@@ -107,11 +114,15 @@ int main(int argv, char* argc[])
     q_2 << -0.379, 0, 0, 0, 0.379, 0, 0, 0, 0, -0.035, 0, 0, 0, 0, 0, 0, 0.035, 0, 0, -0.379, 0, 0, 0, 0.379;
 
     q_3 << -0.379, 0, 0, 0, 0.379, 0, 0, 0, 0, -0.035, 0, 0, 0, 0, 0, 0, 0.035, 0, 0, -0.79, 0, 0, 0, 0.379;
-    //! Sky pose
-    q_4 << -0.3000, 0, 0, 0, -0.79, 0, 1.4112, 0.2730, -1.3730, -0.9863, -0.0062, 0.0015, 0.0214, 1.3945, -0.2731, 1.3698, 0.9879, -0.0077, 0, 0.0016, -0.4510, 1.5, -0.3528, 0;
+    //! Airplane like pose
+    //q_4 << -0.20, 0.3513-0.35, -1.5000+0.8, 1.5300-0.35, 0, 0, 1.4112, 1.2000, -1.3730, -0.9863, -0.0062, 0.0015, -0.6000, 1.3945, -1.2000, 1.3698, 0.9879, -0.0077, 0, 0.0016, 0.4800, 1.0, -0.3528, 0;
 
-    q_5 << 0.00, 0, 0, 0, -0.79, 0, 1.4112, 1.2000, -1.3730, -0.9863, -0.0062, 0.0015, -0.6000, 1.3945, -1.2000, 1.3698, 0.9879, -0.0077, 0, -0.79, 0, 0, 0.93, 0;
-//-0.20  -0.10  (0.39)
+    q_4 << -0.20, 0.3513, -1.5000, 1.5300, 0, 0, 1.4112, 1.2000, -1.3730, -0.9863, -0.0062, 0.0015, -0.6000, 1.3945, -1.2000, 1.3698, 0.9879, -0.0077, 0, 0.0016, 0.4800, 1.0, -0.3528, 0;
+
+    q_5 << -0.1, 1.00, -2.1100, 1.0800, -0.7904, 0, 0.5, -0.31, 0.5, -0.035, 0, 0, 0, 0.5, -1.32, 0, 0.035, 0, 0.0, -0.79, 0, 0, 0, -0.25;
+
+//    q_5 << -0.20, 0.18, 0.092, -0.48, 0, 0, 1.4112, 1.2000, -1.3730, -0.9863, -0.0062, 0.0015, 0.0, 1.3945, -1.2000, 1.3698, 0.9879, -0.0077, 0, 0.0016-0.1, -1.53, 0.0, 0.93, 0;
+
     std::vector< geo::VectorXr > Q_input;
     Q_input.clear();
     Q_input.push_back(q_4);
@@ -135,6 +146,8 @@ int main(int argv, char* argc[])
 //    optSettings->StackConstraints.push_back(geo::constraint_pelvisSymmetry);
 
 //    optSettings->StackConstraints.push_back(geo::constraint_centerOfMass);
+
+//    optSettings->StackConstraints.push_back(geo::constraint_centroidalMomentum);
 
 
 

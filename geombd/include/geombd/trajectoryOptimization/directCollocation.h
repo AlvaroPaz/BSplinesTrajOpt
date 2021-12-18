@@ -77,6 +77,7 @@ struct robotSettingsTrajectoryOptimization {
     real_t si, sf;                          // initial and final time
     VectorXr S;                             // vector time parameter
     VectorXr weights;                       // weights vector for cost function
+    int numberFinalInterpolation;           // number of partitions of the final interpolation
 
     //! Differentiate with respect to
     DifferentiationType DifferentiationWRT;
@@ -90,13 +91,13 @@ struct robotSettingsTrajectoryOptimization {
     //! Upper and lower tolerances for baundaries
     VectorXr qiBound_u;
     VectorXr qfBound_u;
-    VectorXr comBound_u;
-    real_t muBound_u;
+    Vector2r comBound_u;
+    SpatialVector muBound_u;
 
     VectorXr qiBound_l;
     VectorXr qfBound_l;
-    VectorXr comBound_l;
-    real_t muBound_l;
+    Vector2r comBound_l;
+    SpatialVector muBound_l;
 
     //! Constraints customization
     ConstraintsStack StackConstraints;

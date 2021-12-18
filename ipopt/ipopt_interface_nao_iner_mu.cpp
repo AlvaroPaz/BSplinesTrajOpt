@@ -224,8 +224,8 @@ bool PracticeNLP::get_bounds_info(Ipopt::Index n,
             break;
         }
         case geo::constraint_centroidalMomentum: {
-            constraintsUP.segment(innerIndex,6*S.size()) *= robotSettings->muBound_u;
-            constraintsLOW.segment(innerIndex,6*S.size()) *= robotSettings->muBound_l;
+            constraintsUP.segment(innerIndex,6*S.size()) = robotSettings->muBound_u.replicate( S.size(), 1 );
+            constraintsLOW.segment(innerIndex,6*S.size()) = robotSettings->muBound_l.replicate( S.size(), 1 );
             innerIndex += 6*S.size();
 
             std::cout<<"===> Centroidal Momentum Criteria Enabled"<<std::endl;
@@ -549,7 +549,7 @@ void PracticeNLP::finalize_solution(Ipopt::SolverReturn status,
     if(remoteApiCoppelia){
         //! B-Spline extension of vector time
         int prevNumberPartitions = numberPartitions;
-        numberPartitions = 80;  //! (300)  (80)
+        numberPartitions = robotSettings->numberFinalInterpolation;  //! (300)  (80)
         S = geo::VectorXr::LinSpaced(numberPartitions+1, si, sf);
         robotNonlinearProblem->buildBasisFunctions(numberControlPoints, S);
 
@@ -617,6 +617,8 @@ void PracticeNLP::finalize_solution(Ipopt::SolverReturn status,
             simxPauseCommunication(clientID, false);
 
             simxSynchronousTrigger(clientID);
+
+//            std::cout<<"traj = "<<qTrajectory.col(s_iter).transpose()<<std::endl;
 
 //            std::cout<<"time = "<<inc_s_int<<std::endl;
 //            extApi_sleepMs(inc_s_int);  //! robotized movement
