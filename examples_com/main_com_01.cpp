@@ -8,7 +8,7 @@
 // Modified: brian paden Aug-2017
 
 /**
- *	\file examples_com/main_01.cpp
+ *	\file examples_com/main_com_01.cpp
  *	\author Alvaro Paz, Gustavo Arechavaleta
  *	\version 1.0
  *	\date 2020
@@ -73,7 +73,7 @@ int main(int argv, char* argc[])
 
     optSettings->n = robot->getDoF();
     optSettings->numberControlPoints = 4;//4
-    optSettings->numberPartitions    = 15;//7  15
+    optSettings->numberPartitions    = 15;//7
     optSettings->si = 0.0;//0.0
     optSettings->sf = 5.0;//0.1 or 0.2 or 25.0
     optSettings->S = geo::VectorXr::LinSpaced(optSettings->numberPartitions+1, optSettings->si, optSettings->sf);
@@ -83,15 +83,15 @@ int main(int argv, char* argc[])
     robot->setDifferentiationSize( optSettings->n*optSettings->numberControlPoints );
 
 
-    geo::VectorXr q_1(optSettings->n,1), q_2(optSettings->n,1), q_3(optSettings->n,1), q_4(optSettings->n,1), q_5(optSettings->n,1), q_6(optSettings->n,1), q_7(optSettings->n,1), q_8(optSettings->n,1), q_9(optSettings->n,1);
+    geo::VectorXr q_1(optSettings->n,1), q_2(optSettings->n,1), q_3(optSettings->n,1), q_4(optSettings->n,1), q_5(optSettings->n,1);
     q_1 << 0, 0, 0, 0, 0, 0, 0, 0, 0, -0.035, 0, 0, 0, 0, 0, 0, 0.035, 0, 0, 0, 0, 0, 0, 0;
 
     q_2 << -0.379, 0, 0, 0, 0.379, 0, 0, 0, 0, -0.035, 0, 0, 0, 0, 0, 0, 0.035, 0, 0, -0.379, 0, 0, 0, 0.379;
 
     q_3 << -0.379, 0, 0, 0, 0.379, 0, 0, 0, 0, -0.035, 0, 0, 0, 0, 0, 0, 0.035, 0, 0, -0.79, 0, 0, 0, 0.379;
-    //! Airplane like pose
-    q_4 << -0.3000, 0, 0, 0, 0, 0, 1.4112, 0.2730, -1.3730, -0.9863, -0.0062, 0.0015, 0.0214, 1.3945, -0.2731, 1.3698, 0.9879, -0.0077, 0, 0.0016, -0.4510, 1.5, -0.3528, 0;
 
+    q_4 << -0.3000, 0, 0, 0, 0, 0, 1.4112, 0.2730, -1.3730, -0.9863, -0.0062, 0.0015, 0.0214, 1.3945, -0.2731, 1.3698, 0.9879, -0.0077, 0, 0.0016, -0.4510, 1.5, -0.3528, 0;
+    //! Airplane like pose
     q_5 << -0.2000, 0.3513, -1.1000, 1.5300, 0, 0, 1.4112, 1.2000, -1.3730, -0.9863, -0.0062, 0.0015, -0.6000, 1.3945, -1.2000, 1.3698, 0.9879, -0.0077, 0, 0.0016, 0.4800, 0.6995, -0.3528, 0;
 
     std::vector< geo::VectorXr > Q_input;
@@ -121,6 +121,7 @@ int main(int argv, char* argc[])
 
 //    optSettings->StackConstraints.push_back(geo::constraint_centerOfMass);
 
+//    optSettings->StackConstraints.push_back(geo::constraint_centroidalMomentum);
 
 
     //! Create a new instance of your nlp (use a SmartPtr, not raw)
@@ -135,23 +136,16 @@ int main(int argv, char* argc[])
     //! Change some options
     app->Options()->SetNumericValue("tol", 1e-4);
     app->Options()->SetIntegerValue("max_iter", 5000);
-    //        app->Options()->SetNumericValue("max_cpu_time", 200);
-    //        app->Options()->SetIntegerValue("acceptable_iter", 5);
     app->Options()->SetStringValue("mu_strategy", "adaptive"); ///monotone adaptive
     app->Options()->SetStringValue("output_file", "ipopt.out");
 
     //! limited-memory for BFGS and exact for our analytic
-    app->Options()->SetStringValue("hessian_approximation", "limited-memory");
+    app->Options()->SetStringValue("hessian_approximation", "exact");
 
 //    app->Options()->SetStringValue("derivative_test", "second-order");
-    //        app->Options()->SetStringValue("jac_c_constant", "yes");
-    //        app->Options()->SetStringValue("linear_solver", "mumps");
-    //        app->Options()->SetStringValue("accept_every_trial_step", "yes");
-    //        app->Options()->SetNumericValue("bound_relax_factor", 0.2);
-    //        app->Options()->SetStringValue("corrector_type", "primal-dual");
-    //        app->Options()->SetNumericValue("obj_scaling_factor", 0.5);
+//    app->Options()->SetStringValue("jac_c_constant", "yes");
     app->Options()->SetStringValue("nlp_scaling_method", "gradient-based");
-    //        app->Options()->SetStringValue("alpha_for_y", "full");
+//    app->Options()->SetStringValue("alpha_for_y", "full");
 
 
 

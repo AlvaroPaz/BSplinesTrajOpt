@@ -8,7 +8,7 @@
 // Modified: brian paden Aug-2017
 
 /**
- *	\file examples_com/main_01.cpp
+ *	\file examples_mu/main_mu_01.cpp
  *	\author Alvaro Paz, Gustavo Arechavaleta
  *	\version 1.0
  *	\date 2020
@@ -83,7 +83,7 @@ int main(int argv, char* argc[])
     robot->setDifferentiationSize( optSettings->n*optSettings->numberControlPoints );
 
 
-    geo::VectorXr q_1(optSettings->n,1), q_2(optSettings->n,1), q_3(optSettings->n,1), q_4(optSettings->n,1), q_5(optSettings->n,1), q_6(optSettings->n,1), q_7(optSettings->n,1), q_8(optSettings->n,1), q_9(optSettings->n,1);
+    geo::VectorXr q_1(optSettings->n,1), q_2(optSettings->n,1), q_3(optSettings->n,1), q_4(optSettings->n,1), q_5(optSettings->n,1);
     q_1 << 0, 0, 0, 0, 0, 0, 0, 0, 0, -0.035, 0, 0, 0, 0, 0, 0, 0.035, 0, 0, 0, 0, 0, 0, 0;
 
     q_2 << -0.379, 0, 0, 0, 0.379, 0, 0, 0, 0, -0.035, 0, 0, 0, 0, 0, 0, 0.035, 0, 0, -0.379, 0, 0, 0, 0.379;
@@ -133,7 +133,6 @@ int main(int argv, char* argc[])
 //    optSettings->StackConstraints.push_back(geo::constraint_centroidalMomentum);
 
 
-
     //! Create a new instance of your nlp (use a SmartPtr, not raw)
     Ipopt::SmartPtr<Ipopt::TNLP> mynlp = new PracticeNLP(robot, optSettings);
 
@@ -146,24 +145,17 @@ int main(int argv, char* argc[])
     //! Change some options
     app->Options()->SetNumericValue("tol", 1e-4);
     app->Options()->SetIntegerValue("max_iter", 5000);
-    //        app->Options()->SetNumericValue("max_cpu_time", 200);
-    //        app->Options()->SetIntegerValue("acceptable_iter", 5);
+
     app->Options()->SetStringValue("mu_strategy", "adaptive"); ///monotone adaptive
     app->Options()->SetStringValue("output_file", "ipopt.out");
 
     //! limited-memory for BFGS and exact for our analytic
-    app->Options()->SetStringValue("hessian_approximation", "limited-memory");
+    app->Options()->SetStringValue("hessian_approximation", "exact");
 
 //    app->Options()->SetStringValue("derivative_test", "second-order");
-    //        app->Options()->SetStringValue("jac_c_constant", "yes");
-    //        app->Options()->SetStringValue("linear_solver", "mumps");
-    //        app->Options()->SetStringValue("accept_every_trial_step", "yes");
-    //        app->Options()->SetNumericValue("bound_relax_factor", 0.2);
-    //        app->Options()->SetStringValue("corrector_type", "primal-dual");
-    //        app->Options()->SetNumericValue("obj_scaling_factor", 0.5);
-    app->Options()->SetStringValue("nlp_scaling_method", "gradient-based");
-    //        app->Options()->SetStringValue("alpha_for_y", "full");
+//    app->Options()->SetStringValue("jac_c_constant", "yes");
 
+    app->Options()->SetStringValue("nlp_scaling_method", "gradient-based");
 
 
     //! Initialize the IpoptApplication and process the options

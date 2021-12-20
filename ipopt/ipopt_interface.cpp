@@ -8,7 +8,7 @@
 // Modified: brian paden Aug-2017
 
 /**
- *	\file ipopt_interface_01.cpp
+ *	\file ipopt/ipopt_interface.cpp
  *	\author Alvaro Paz, Gustavo Arechavaleta
  *	\version 1.0
  *	\date 2020
@@ -72,6 +72,9 @@ PracticeNLP::PracticeNLP( std::shared_ptr< geo::MultiBody > robot, std::shared_p
 
     // Retrieve time vector
     this->S = robotSettings->S;
+
+    // Retrieve the weights vector
+    this->weights = robotSettings->weights;
 
     // Motion object instance
     this->robotNonlinearProblem = new geo::DirectCollocation( robot, robotSettings );
@@ -282,7 +285,7 @@ bool PracticeNLP::eval_f(Ipopt::Index n,
     MapVec controlPoints( x, n );
 
     //! objective function evaluation, partial derivatives disabled
-    robotNonlinearProblem->computeObjectiveFunction(controlPoints, false, false);
+    robotNonlinearProblem->computeObjectiveFunction(controlPoints, weights, false, false);
 
     //! retrieve cost
     obj_value = robotNonlinearProblem->getCost();
@@ -301,7 +304,7 @@ bool PracticeNLP::eval_grad_f(Ipopt::Index n, const Ipopt::Number* x, bool new_x
     MapVec controlPoints( x, n );
 
     //! objective function evaluation, first partial derivative enabled
-    robotNonlinearProblem->computeObjectiveFunction(controlPoints, true, false);
+    robotNonlinearProblem->computeObjectiveFunction(controlPoints, weights, true, false);
 
     //! casting the retrieved cost gradient
     Map<geo::MatrixXr>( grad_f, 1, n ) = robotNonlinearProblem->getCostGradient();
@@ -406,7 +409,7 @@ bool PracticeNLP::eval_h(Ipopt::Index n,
 
         //! Cost-function Hessian evaluation
         if (new_x) {
-            if (obj_factor!=0) robotNonlinearProblem->computeObjectiveFunction(controlPoints, true, true);
+            if (obj_factor!=0) robotNonlinearProblem->computeObjectiveFunction(controlPoints, weights, true, true);
             robotNonlinearProblem->computeConstraints(controlPoints, true, true);
         }
 
@@ -462,7 +465,7 @@ void PracticeNLP::finalize_solution(Ipopt::SolverReturn status,
         cout << endl << endl << "Solution of the primal variables, x" << endl;
         cout << controlPoints.transpose() << endl;
 
-        robotNonlinearProblem->computeObjectiveFunction(controlPoints, true, false);
+        robotNonlinearProblem->computeObjectiveFunction(controlPoints, weights, true, false);
         cout << endl << endl << "f(x*) = " << endl;
         cout << robotNonlinearProblem->getCost() << endl;
         //    cout << endl << endl << "Gradient of cost function" << endl;

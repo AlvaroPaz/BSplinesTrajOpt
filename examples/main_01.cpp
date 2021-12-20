@@ -13,7 +13,7 @@
  *	\version 1.0
  *	\date 2020
  *
- *	Optimal motion generation for inertial Nao
+ *	Optimal motion generation for inertial Nao -> Airplane-like movement
  */
 
 #include "geombd/core.h"
@@ -76,27 +76,28 @@ int main(int argv, char* argc[])
     optSettings->S = geo::VectorXr::LinSpaced(optSettings->numberPartitions+1, optSettings->si, optSettings->sf);
     optSettings->DifferentiationWRT = geo::wrt_controlPoints;
     robot->setDifferentiationSize( optSettings->n*optSettings->numberControlPoints );
+    geo::VectorXr weights;  weights.setOnes(optSettings->n);
+    optSettings->weights = weights;
 
 
     geo::VectorXr q_1(optSettings->n,1), q_2(optSettings->n,1), q_3(optSettings->n,1), q_4(optSettings->n,1), q_5(optSettings->n,1);
     q_1 << 0, 0, 0, 0, 0, 0, 0, 0, 0, -0.035, 0, 0, 0, 0, 0, 0, 0.035, 0, 0, 0, 0, 0, 0, 0;
+
     q_2 << -0.379, 0, 0, 0, 0.379, 0, 0, 0, 0, -0.035, 0, 0, 0, 0, 0, 0, 0.035, 0, 0, -0.379, 0, 0, 0, 0.379;
+
     q_3 << -0.379, 0, 0, 0, 0.379, 0, 0, 0, 0, -0.035, 0, 0, 0, 0, 0, 0, 0.035, 0, 0, -0.79, 0, 0, 0, 0.379;
-    //! Airplane like pose
+
     q_4 << -0.3000, 0, 0, 0, 0, 0, 1.4112, 0.2730, -1.3730, -0.9863, -0.0062, 0.0015, 0.0214, 1.3945, -0.2731, 1.3698, 0.9879, -0.0077, 0, 0.0016, -0.4510, 0.6995, -0.3528, 0;
+
     q_5 << -0.2000, 0.3513, -1.1000, 1.5300, 0, 0, 1.4112, 1.2000, -1.3730, -0.9863, -0.0062, 0.0015, -0.6000, 1.3945, -1.2000, 1.3698, 0.9879, -0.0077, 0, 0.0016, 0.4800, 0.6995, -0.3528, 0;
 
-
-//    geo::InverseDynamics* InvDyn = new geo::InverseDynamics( robot );
-//    InvDyn->setGeneralizedCoordinates(q_4,q_4,q_4);
-//    InvDyn->computeCenterOfMass(false, false);
-//    std::cout<<"CoM = "<<InvDyn->getRobotCoM().transpose()<<std::endl;
-
-//    InvDyn->computeForwardKinematics();
-
-//    geo::DynamicBody * BB = (geo::DynamicBody *)( robot->getPubBodies().at(6) );
-//    std::cout<<"LL pos = " <<std::endl<< BB->getName() << std::endl;
-//    std::cout<<"LL pos = " <<std::endl<< BB->getGlobalConfiguration() << std::endl;
+    std::vector< geo::VectorXr > Q_input;
+    Q_input.clear();
+    Q_input.push_back(q_1);
+    Q_input.push_back(q_2);
+    Q_input.push_back(q_3);
+    Q_input.push_back(q_4);
+    Q_input.push_back(q_5);
 
 
     //! Fill up stack of constraints
@@ -104,10 +105,10 @@ int main(int argv, char* argc[])
     optSettings->StackConstraints.clear();
 
     optSettings->StackConstraints.push_back(geo::constraint_initialConfiguration);
-    optSettings->initialConfiguration = q_4;
+    optSettings->initialConfiguration = q_1;
 
     optSettings->StackConstraints.push_back(geo::constraint_finalConfiguration);
-    optSettings->finalConfiguration = q_5;
+    optSettings->finalConfiguration = q_2;
 
     optSettings->StackConstraints.push_back(geo::constraint_initialGeneralizedVelocity);
     optSettings->initialGeneralizedVelocity = geo::VectorXr::Zero(optSettings->n,1);
@@ -136,21 +137,14 @@ int main(int argv, char* argc[])
     //! ---------------------------------------------------------------------------------------------------------- !//
     app->Options()->SetNumericValue("tol", 1e-4);
     app->Options()->SetIntegerValue("max_iter", 5000);
-//    app->Options()->SetNumericValue("max_cpu_time", 200);
-//    app->Options()->SetIntegerValue("acceptable_iter", 5);
+
     app->Options()->SetStringValue("mu_strategy", "adaptive"); ///monotone adaptive
-//    app->Options()->SetStringValue("output_file", "ipopt.out");
+
     //! limited-memory for BFGS and exact for our analytic
     app->Options()->SetStringValue("hessian_approximation", "exact");
 //    app->Options()->SetStringValue("derivative_test", "second-order");
 //    app->Options()->SetStringValue("jac_c_constant", "yes");
-//    app->Options()->SetStringValue("linear_solver", "mumps");
-//    app->Options()->SetStringValue("accept_every_trial_step", "yes");
-//    app->Options()->SetNumericValue("bound_relax_factor", 0.2);
-//    app->Options()->SetStringValue("corrector_type", "primal-dual");
-//    app->Options()->SetNumericValue("obj_scaling_factor", 0.5);
     app->Options()->SetStringValue("nlp_scaling_method", "gradient-based");
-//    app->Options()->SetStringValue("alpha_for_y", "full");
 
 
     //! Initialize the IpoptApplication and process the options
@@ -164,15 +158,20 @@ int main(int argv, char* argc[])
 
 
     //! Ask Ipopt to solve the problem
-    //! ---------------------------------------------------------------------------------------------------------- !//
-    status = app->OptimizeTNLP(mynlp);
+    for(short int innerIter; innerIter < Q_input.size()-1; innerIter++ ){
+        optSettings->initialConfiguration = Q_input.at(innerIter);
+        optSettings->finalConfiguration = Q_input.at(innerIter+1);
+        status = app->OptimizeTNLP(mynlp);
 
-    if (status == Ipopt::Solve_Succeeded) {
-        std::cout << std::endl << std::endl << "*** The problem solved!" << std::endl;
+        if (status == Ipopt::Solve_Succeeded) {
+            std::cout << std::endl << std::endl << "*** The problem solved!" << std::endl;
+        }
+        else {
+            std::cout << std::endl << std::endl << "*** The problem FAILED!" << std::endl;
+        }
+
     }
-    else {
-        std::cout << std::endl << std::endl << "*** The problem FAILED!" << std::endl;
-    }
+
 
     //! As the SmartPtrs go out of scope, the reference count will be decremented and the objects will automatically be deleted.
     return (int) status;

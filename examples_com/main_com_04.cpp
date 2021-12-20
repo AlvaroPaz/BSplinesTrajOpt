@@ -14,6 +14,7 @@
  *	\date 2020
  *
  *	Optimal motion generation for inertial Nao (sequential movements) -> Leg to Right
+ *      -> Before executing this example you must run the com_example_01 first
  */
 
 #include "geombd/core.h"
@@ -92,32 +93,27 @@ int main(int argv, char* argc[])
     optSettings->qiBound_u = bound_aux;
     optSettings->qfBound_u = bound_aux;
     optSettings->comBound_u = geo::VectorXr::Ones(2,1) * 0.026*1.6;
-    optSettings->muBound_u = 1e-2;
+    optSettings->muBound_u = geo::SpatialVector::Ones() * 1e-2;
 
     optSettings->qiBound_l = -bound_aux;
     optSettings->qfBound_l = -bound_aux;
     optSettings->comBound_l = -geo::VectorXr::Ones(2,1) * 0.026*1.8;
-    optSettings->muBound_l = -1e-2;
+    optSettings->muBound_l = -geo::SpatialVector::Ones() * 1e-2;
 
 
     //! Generalized Configurations
-    geo::VectorXr q_1(optSettings->n,1), q_2(optSettings->n,1), q_3(optSettings->n,1), q_4(optSettings->n,1), q_5(optSettings->n,1), q_6(optSettings->n,1), q_7(optSettings->n,1), q_8(optSettings->n,1), q_9(optSettings->n,1);
+    geo::VectorXr q_1(optSettings->n,1), q_2(optSettings->n,1), q_3(optSettings->n,1), q_4(optSettings->n,1), q_5(optSettings->n,1);
     q_1 << 0, 0, 0, 0, 0, 0, 0, 0, 0, -0.035, 0, 0, 0, 0, 0, 0, 0.035, 0, 0, 0, 0, 0, 0, 0;
 
     q_2 << -0.379, 0, 0, 0, 0.379, 0, 0, 0, 0, -0.035, 0, 0, 0, 0, 0, 0, 0.035, 0, 0, -0.379, 0, 0, 0, 0.379;
 
     q_3 << -0.379, 0, 0, 0, 0.379, 0, 0, 0, 0, -0.035, 0, 0, 0, 0, 0, 0, 0.035, 0, 0, -0.79, 0, 0, 0, 0.379;
-    //! Leg to Right pose
+
     q_4 << -0.3000, 0, 0, 0, 0, 0, 1.4112, 0.2730, -1.3730, -0.9863, -0.0062, 0.0015, 0.0214, 1.3945, -0.2731, 1.3698, 0.9879, -0.0077, 0, 0.0016, -0.4510, 1.5, -0.3528, 0;
 
     q_5 << 0.1, 0.650, -2.1100, 1.0800, -0.7904, 0, 0, 0, 0, -0.035, 0, 0, 0, 0, 0, 0, 0.035, 0, 0.0, -0.3794*1.5, 0, 0, 0, -0.25;
 
-//(-0.2, 0.9200)
 
-
-
-//    q_5 << -0.10, 0.3513, -1.5000, 1.5300, 0, 0, 1.4112, 1.2000, -1.3730, -0.9863, -0.0062, 0.0015, -0.6000, 1.3945, -1.2000, 1.3698, 0.9879, -0.0077, 0, 0.0016, 0.4800, 1.0, -0.3528, 0;
-//-0.20  -0.10  (0.39)
     std::vector< geo::VectorXr > Q_input;
     Q_input.clear();
     Q_input.push_back(q_4);
@@ -156,24 +152,16 @@ int main(int argv, char* argc[])
     //! Change some options
     app->Options()->SetNumericValue("tol", 1e-4);
     app->Options()->SetIntegerValue("max_iter", 5000);
-    //        app->Options()->SetNumericValue("max_cpu_time", 200);
-    //        app->Options()->SetIntegerValue("acceptable_iter", 5);
+
     app->Options()->SetStringValue("mu_strategy", "adaptive"); ///monotone adaptive
     app->Options()->SetStringValue("output_file", "ipopt.out");
 
     //! limited-memory for BFGS and exact for our analytic
-    app->Options()->SetStringValue("hessian_approximation", "limited-memory");
+    app->Options()->SetStringValue("hessian_approximation", "exact");
 
 //    app->Options()->SetStringValue("derivative_test", "second-order");
-    //        app->Options()->SetStringValue("jac_c_constant", "yes");
-    //        app->Options()->SetStringValue("linear_solver", "mumps");
-    //        app->Options()->SetStringValue("accept_every_trial_step", "yes");
-    //        app->Options()->SetNumericValue("bound_relax_factor", 0.2);
-    //        app->Options()->SetStringValue("corrector_type", "primal-dual");
-    //        app->Options()->SetNumericValue("obj_scaling_factor", 0.5);
+//    app->Options()->SetStringValue("jac_c_constant", "yes");
     app->Options()->SetStringValue("nlp_scaling_method", "gradient-based");
-    //        app->Options()->SetStringValue("alpha_for_y", "full");
-
 
 
     //! Initialize the IpoptApplication and process the options

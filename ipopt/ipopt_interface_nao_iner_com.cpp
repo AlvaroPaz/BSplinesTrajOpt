@@ -8,7 +8,7 @@
 // Modified: brian paden Aug-2017
 
 /**
- *	\file ipopt_interface_01.cpp
+ *	\file ipopt/ipopt_interface_nao_iner_com.cpp
  *	\author Alvaro Paz, Gustavo Arechavaleta
  *	\version 1.0
  *	\date 2020
@@ -224,8 +224,8 @@ bool PracticeNLP::get_bounds_info(Ipopt::Index n,
             break;
         }
         case geo::constraint_centroidalMomentum: {
-            constraintsUP.segment(innerIndex,6*S.size()) *= robotSettings->muBound_u;
-            constraintsLOW.segment(innerIndex,6*S.size()) *= robotSettings->muBound_l;
+            constraintsUP.segment(innerIndex,6*S.size()) = robotSettings->muBound_u.replicate( S.size(), 1 );
+            constraintsLOW.segment(innerIndex,6*S.size()) = robotSettings->muBound_l.replicate( S.size(), 1 );
             innerIndex += 6*S.size();
 
             std::cout<<"===> Centroidal Momentum Criteria Enabled"<<std::endl;

@@ -13,7 +13,7 @@
  *	\version 1.0
  *	\date 2020
  *
- *	Optimal motion generation for inertial Nao (sequential movements)
+ *	Optimal motion generation for inertial Nao (sequential movements) -> Crossing door sequence
  */
 
 #include "geombd/core.h"
@@ -79,6 +79,8 @@ int main(int argv, char* argc[])
     optSettings->S = geo::VectorXr::LinSpaced(optSettings->numberPartitions+1, optSettings->si, optSettings->sf);
     optSettings->DifferentiationWRT = geo::wrt_controlPoints;
     robot->setDifferentiationSize( optSettings->n*optSettings->numberControlPoints );
+    geo::VectorXr weights;  weights.setOnes(optSettings->n);
+    optSettings->weights = weights;
 
 
     geo::VectorXr q_1(optSettings->n,1), q_2(optSettings->n,1), q_3(optSettings->n,1), q_4(optSettings->n,1), q_5(optSettings->n,1), q_6(optSettings->n,1), q_7(optSettings->n,1), q_8(optSettings->n,1), q_9(optSettings->n,1);
@@ -142,21 +144,14 @@ int main(int argv, char* argc[])
     //! Change some options
     app->Options()->SetNumericValue("tol", 1e-4);
     app->Options()->SetIntegerValue("max_iter", 5000);
-    //        app->Options()->SetNumericValue("max_cpu_time", 200);
-    //        app->Options()->SetIntegerValue("acceptable_iter", 5);
+
     app->Options()->SetStringValue("mu_strategy", "adaptive"); ///monotone adaptive
     app->Options()->SetStringValue("output_file", "ipopt.out");
     app->Options()->SetStringValue("hessian_approximation", "limited-memory"); /// exact
 //    app->Options()->SetStringValue("derivative_test", "second-order");
-    //        app->Options()->SetStringValue("jac_c_constant", "yes");
-    //        app->Options()->SetStringValue("linear_solver", "mumps");
-    //        app->Options()->SetStringValue("accept_every_trial_step", "yes");
-    //        app->Options()->SetNumericValue("bound_relax_factor", 0.2);
-    //        app->Options()->SetStringValue("corrector_type", "primal-dual");
-    //        app->Options()->SetNumericValue("obj_scaling_factor", 0.5);
-    app->Options()->SetStringValue("nlp_scaling_method", "gradient-based");
-    //        app->Options()->SetStringValue("alpha_for_y", "full");
+//    app->Options()->SetStringValue("jac_c_constant", "yes");
 
+    app->Options()->SetStringValue("nlp_scaling_method", "gradient-based");
 
 
     //! Initialize the IpoptApplication and process the options
