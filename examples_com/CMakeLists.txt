@@ -1,3 +1,4 @@
+message("BUILD_COM_EXAMPLES is active")
 
 add_executable(com_example_01 main_com_01.cpp)
 target_link_libraries(com_example_01 ipopt_interface_nao_iner_com_01 ipopt ${GeoMBD_LIBRARIES} ${PQP_LIBRARIES})

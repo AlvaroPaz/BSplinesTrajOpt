@@ -1,3 +1,4 @@
+message("BUILD_EXAMPLES is active")
 
 add_executable(ipopt_example_01 main_01.cpp)
 target_link_libraries(ipopt_example_01 ipopt_interface)

@@ -1,3 +1,4 @@
+message("BUILD_MU_EXAMPLES is active")
 
 add_executable(mu_example_01 main_mu_01.cpp)
 target_link_libraries(mu_example_01 ipopt_interface_nao_iner_mu_01 ipopt ${GeoMBD_LIBRARIES} ${PQP_LIBRARIES})

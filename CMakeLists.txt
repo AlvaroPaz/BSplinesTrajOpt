@@ -15,7 +15,6 @@ include_directories(${IPOPT_INCLUDE_DIRS} ${CMAKE_SOURCE_DIR}/include)
 link_directories(${IPOPT_LIBRARY_DIRS})
 
 
-
 list(APPEND CMAKE_FIND_ROOT_PATH ${PROJECT_SOURCE_DIR}/PQP/cmake/linux-64)
 find_package(PQP)
 include_directories(${PQP_INCLUDE_DIRS})
@@ -43,13 +42,11 @@ add_library(ipopt_interface ipopt/ipopt_interface.cpp)
 target_link_libraries(ipopt_interface ${GeoMBD_LIBRARIES} ${PQP_LIBRARIES} ${Coppelia_LIBRARIES} rt)
 
 
-
 add_library(ipopt_interface_nao_iner_com_01 ipopt/ipopt_interface_nao_iner_com_01)
 target_link_libraries(ipopt_interface_nao_iner_com_01 ${GeoMBD_LIBRARIES} ${PQP_LIBRARIES} ${Coppelia_LIBRARIES} rt)
 
 add_library(ipopt_interface_nao_iner_com ipopt/ipopt_interface_nao_iner_com)
 target_link_libraries(ipopt_interface_nao_iner_com ${GeoMBD_LIBRARIES} ${PQP_LIBRARIES} ${Coppelia_LIBRARIES} rt)
-
 
 
 add_library(ipopt_interface_nao_iner_mu_01 ipopt/ipopt_interface_nao_iner_mu_01)
@@ -64,4 +61,6 @@ add_subdirectory(examples)
 add_subdirectory(examples_com)
 
 add_subdirectory(examples_mu)
+
+add_subdirectory(time_tests)
 
