@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 2.8)
 project(ipopt_example)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall")
-# set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
+set(CMAKE_CXX_FLAGS_RELEASE "-msse -msse2 -msse3 -O3 -pedantic -DNDEBUG")
 
 set(IPOPT_LIBRARY_DIRS /home/alvaropaz/MY_IPOPT_DIR/build/lib)
 set(IPOPT_INCLUDE_DIRS /home/alvaropaz/MY_IPOPT_DIR/build/include/coin)
@@ -34,33 +34,33 @@ find_package(Eigen3 REQUIRED)
 include_directories(${EIGEN3_INCLUDE_DIR})
 
 
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -lrt")
+#SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+#SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -lrt")
 
 
-add_library(ipopt_interface ipopt/ipopt_interface.cpp)
-target_link_libraries(ipopt_interface ${GeoMBD_LIBRARIES} ${PQP_LIBRARIES} ${Coppelia_LIBRARIES} rt)
+#add_library(ipopt_interface ipopt/ipopt_interface.cpp)
+#target_link_libraries(ipopt_interface ${GeoMBD_LIBRARIES} ${PQP_LIBRARIES} ${Coppelia_LIBRARIES} rt)
 
 
-add_library(ipopt_interface_nao_iner_com_01 ipopt/ipopt_interface_nao_iner_com_01)
-target_link_libraries(ipopt_interface_nao_iner_com_01 ${GeoMBD_LIBRARIES} ${PQP_LIBRARIES} ${Coppelia_LIBRARIES} rt)
+#add_library(ipopt_interface_nao_iner_com_01 ipopt/ipopt_interface_nao_iner_com_01)
+#target_link_libraries(ipopt_interface_nao_iner_com_01 ${GeoMBD_LIBRARIES} ${PQP_LIBRARIES} ${Coppelia_LIBRARIES} rt)
 
-add_library(ipopt_interface_nao_iner_com ipopt/ipopt_interface_nao_iner_com)
-target_link_libraries(ipopt_interface_nao_iner_com ${GeoMBD_LIBRARIES} ${PQP_LIBRARIES} ${Coppelia_LIBRARIES} rt)
-
-
-add_library(ipopt_interface_nao_iner_mu_01 ipopt/ipopt_interface_nao_iner_mu_01)
-target_link_libraries(ipopt_interface_nao_iner_mu_01 ${GeoMBD_LIBRARIES} ${PQP_LIBRARIES} ${Coppelia_LIBRARIES} rt)
-
-add_library(ipopt_interface_nao_iner_mu ipopt/ipopt_interface_nao_iner_mu)
-target_link_libraries(ipopt_interface_nao_iner_mu ${GeoMBD_LIBRARIES} ${PQP_LIBRARIES} ${Coppelia_LIBRARIES} rt)
+#add_library(ipopt_interface_nao_iner_com ipopt/ipopt_interface_nao_iner_com)
+#target_link_libraries(ipopt_interface_nao_iner_com ${GeoMBD_LIBRARIES} ${PQP_LIBRARIES} ${Coppelia_LIBRARIES} rt)
 
 
-add_subdirectory(examples)
+#add_library(ipopt_interface_nao_iner_mu_01 ipopt/ipopt_interface_nao_iner_mu_01)
+#target_link_libraries(ipopt_interface_nao_iner_mu_01 ${GeoMBD_LIBRARIES} ${PQP_LIBRARIES} ${Coppelia_LIBRARIES} rt)
 
-add_subdirectory(examples_com)
+#add_library(ipopt_interface_nao_iner_mu ipopt/ipopt_interface_nao_iner_mu)
+#target_link_libraries(ipopt_interface_nao_iner_mu ${GeoMBD_LIBRARIES} ${PQP_LIBRARIES} ${Coppelia_LIBRARIES} rt)
 
-add_subdirectory(examples_mu)
+
+#add_subdirectory(examples)
+
+#add_subdirectory(examples_com)
+
+#add_subdirectory(examples_mu)
 
 add_subdirectory(time_tests)
 

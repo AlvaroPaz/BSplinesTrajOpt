@@ -94,25 +94,37 @@ int main( int argc, char** argv ){
 
     //! Optimization settings pointer
     //!------------------------------------------------------------------------------!//
-    int numberControlPoints = 2;
-    int diffSize = n*numberControlPoints;
-    robot->setDifferentiationSize( diffSize );
+    std::shared_ptr< geo::robotSettingsTrajectoryOptimization > optSettings(new geo::robotSettingsTrajectoryOptimization);
+
+    optSettings->n =  robot->getDoF();
+    optSettings->numberControlPoints = 4;
+    optSettings->numberPartitions    = 7;
+    optSettings->si = 0.0;
+    optSettings->sf = 0.1;
+    optSettings->S = geo::VectorXr::LinSpaced(optSettings->numberPartitions+1, optSettings->si, optSettings->sf);
+    optSettings->DifferentiationWRT = geo::wrt_controlPoints;
+    robot->setDifferentiationSize( optSettings->n*optSettings->numberControlPoints );
 
     //! Dynamics object pointer
     //!------------------------------------------------------------------------------!//
     auto robotDynamics = std::make_shared< geo::InverseDynamics >( robot );
     robotDynamics->setGeneralizedCoordinates(q, dq, ddq);
 
-    //! Build random basis functions
+    //! Trajectory optimization instantiation
     //!------------------------------------------------------------------------------!//
+    geo::DirectCollocation robotNonlinearProblem(robot, optSettings);
+
+    //! Build basis functions
+    //!------------------------------------------------------------------------------!//
+    robotNonlinearProblem.buildBasisFunctions(  );
     geo::MatrixXr D_q, D_dq, D_ddq;
-    D_q   = geo::MatrixXr::Random(n, diffSize);
-    D_dq  = geo::MatrixXr::Random(n, diffSize);
-    D_ddq = geo::MatrixXr::Random(n, diffSize);
+    D_q   = robotNonlinearProblem.getBasis().topRows(n);
+    D_dq  = robotNonlinearProblem.getDBasis().topRows(n);
+    D_ddq = robotNonlinearProblem.getDDBasis().topRows(n);
     robotDynamics->setGeneralizedCoordinatesDifferentiation(D_q, D_dq, D_ddq);
 
     geo::MatrixXr DD_q;
-    DD_q   = geo::MatrixXr::Random(n, diffSize*diffSize);;
+    DD_q   = geo::MatrixXr::Random(n, robot->getDifferentiationSize()*robot->getDifferentiationSize());
     robotDynamics->setGeneralizedCoordinatesSecondDifferentiation( DD_q );
 
     //! Time settings
