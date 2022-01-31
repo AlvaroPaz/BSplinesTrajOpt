@@ -30,7 +30,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-std::string naoFile = "../../BSplinesTrajOpt/data/nao_inertial_python.urdf";
+std::string naoFile = "../../data/nao_inertial_python.urdf";
 
 
 #include <IpIpoptApplication.hpp>

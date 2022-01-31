@@ -273,6 +273,12 @@ class InverseDynamics : public Kinematics
          /*! \param boolean flag for computing partials
          * \return void
          */
+    void computeCentroidalMomentumII(const bool &firstDerivative, const bool &secondDerivative);
+
+    //! Compute the multibody centroidal momentum
+         /*! \param boolean flag for computing partials
+         * \return void
+         */
     void computeCentroidalMomentum(const bool &firstDerivative, const bool &secondDerivative);
 
     //! Compute the center of mass of the whole multibody system

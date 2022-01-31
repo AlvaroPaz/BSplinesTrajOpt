@@ -47,6 +47,16 @@ enum DifferentiationType
 };
 
 
+//! The type of the derivation routine
+/*! \ingroup core_module  */
+enum DerivationRoutine
+{
+    _BFGS_,           /*!< Differentiate using the quasi-Newton method. */
+    _Numeric_,        /*!< Differentiate using finite differences. */
+    _Analytic_        /*!< Differentiate using exact geometric algorithms. */
+};
+
+
 //! The type of constraint
 /*! \ingroup core_module  */
 enum ConstraintType
@@ -81,6 +91,9 @@ struct robotSettingsTrajectoryOptimization {
 
     //! Differentiate with respect to
     DifferentiationType DifferentiationWRT;
+
+    //! Derivation routine
+    DerivationRoutine deriveRoutine;
 
     //! Boundaries
     VectorXr initialConfiguration;
@@ -262,6 +275,12 @@ class DirectCollocation
          * \return void
          */
     void computeConstraints(const MatrixXr &c, const bool &computeFirstDerivative, const bool &computeSecondDerivative);
+
+    //! Compute constraints of NLP
+         /*! \param control points c and boolean flag for computing partials
+         * \return void
+         */
+    void computeConstraintsII(const MatrixXr &c, const bool &computeFirstDerivative, const bool &computeSecondDerivative);
 
     //! Set initial configuration
          /*! \param initial configuration
