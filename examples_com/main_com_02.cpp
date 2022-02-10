@@ -86,8 +86,8 @@ int main(int argv, char* argc[])
     robot->setDifferentiationSize( optSettings->n*optSettings->numberControlPoints );
 
     //! Set derivation routine
-//    optSettings->deriveRoutine = geo::_Analytic_;
-    optSettings->deriveRoutine = geo::_Numeric_;
+    optSettings->deriveRoutine = geo::_Analytic_;
+//    optSettings->deriveRoutine = geo::_Numeric_;
 //    optSettings->deriveRoutine = geo::_BFGS_;
 
     //! Boundaries

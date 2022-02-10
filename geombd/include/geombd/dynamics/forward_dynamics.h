@@ -123,11 +123,11 @@ class ForwardDynamics : public LieOperators
             nS = robot->getSubTreeBody(tempBody->getId()).size();
 
             Pre = robot->getPredecessorJoints(tempBody->getId());
-            for(short int pk=0; pk<Pre.size(); pk++){ Pre.at(pk)--; }
+            for(int pk=0; pk<Pre.size(); pk++){ Pre.at(pk)--; }
 
             Suc = robot->getSubTreeBody(tempBody->getId());
             Suc.erase (Suc.begin());
-            for(short int pk=0; pk<Suc.size(); pk++){ Suc.at(pk)--; }
+            for(int pk=0; pk<Suc.size(); pk++){ Suc.at(pk)--; }
 
             PRE.at(i) = Pre;    SUC.at(i) = Suc;    PreSuc = Pre;
             PreSuc.insert(std::end(PreSuc), std::begin(Suc), std::end(Suc));

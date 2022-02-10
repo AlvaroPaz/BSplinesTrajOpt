@@ -38,6 +38,7 @@
 #include "Eigen/Dense"
 #include "Eigen/Sparse"
 #include "Eigen/../unsupported/Eigen/KroneckerProduct"
+//#include "geombd/VanishProduct"
 //#include "Eigen/src/Core/Map.h"
 #include <chrono>
 

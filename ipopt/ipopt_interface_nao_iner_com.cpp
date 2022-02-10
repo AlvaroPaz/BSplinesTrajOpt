@@ -439,17 +439,32 @@ bool PracticeNLP::eval_h(Ipopt::Index n,
 {
   if (values == NULL) {
 
-      Ipopt::Index idx=0;
-      Ipopt::Index j__ = 0;
-      for (Ipopt::Index i_ = 0; i_ < n; i_++) {
-          for (Ipopt::Index j_ = 0; j_ < (n-j__); j_++) {
-              iRow[idx] = j_;
-              jCol[idx] = j_ + j__;
-              idx++;
+      if(robotSettings->deriveRoutine == geo::_Analytic_) {
+
+          Ipopt::Index idx=0;
+          for (Ipopt::Index i_ = 0; i_ < n; i_++) {
+              for (Ipopt::Index j_ = i_; j_ < n; j_++) {
+                  iRow[idx] = i_;
+                  jCol[idx] = j_;
+                  idx++;
+                }
             }
-          j__++;
+          assert(idx == nele_hess);
+
+        } else {
+
+          Ipopt::Index idx=0;
+          Ipopt::Index j__ = 0;
+          for (Ipopt::Index i_ = 0; i_ < n; i_++) {
+              for (Ipopt::Index j_ = 0; j_ < (n-j__); j_++) {
+                  iRow[idx] = j_;
+                  jCol[idx] = j_ + j__;
+                  idx++;
+                }
+              j__++;
+            }
+          assert(idx == nele_hess);
         }
-      assert(idx == nele_hess);
     }
   else {
 
@@ -465,19 +480,16 @@ bool PracticeNLP::eval_h(Ipopt::Index n,
 
           if(robotSettings->deriveRoutine == geo::_Analytic_) {
 
+
               //! Cost-function Hessian evaluation
-              if (obj_factor!=0) robotNonlinearProblem->computeObjectiveFunction(controlPoints, weights, true, true);
-              robotNonlinearProblem->computeConstraintsII(controlPoints, true, true);
+              if (obj_factor!=0) robotNonlinearProblem->computeContractedCostFunction(controlPoints, weights, true, true);
+              robotNonlinearProblem->computeContractedConstraints(controlPoints, true, true);
 
               //! Triangulating and casting the retrieved symmetric cost Hessian
-              costHessian = obj_factor*robotNonlinearProblem->getCostHessian();
+              stackHessLagrange = obj_factor*robotNonlinearProblem->getContractedCostHessian();
 
               //! Triangulating and casting the retrieved symmetric constraints Hessian
-              gHessian = eigenLambda.transpose()*robotNonlinearProblem->getConstraintsHessian();
-              gHessian.resize(n, n);
-
-              //! Hessian of the Lagrangian
-              HessLagrange = costHessian + gHessian;
+              stackHessLagrange += robotNonlinearProblem->getContractedConstraintsHessian().transpose() * eigenLambda;
 
 
             } else {
@@ -565,12 +577,11 @@ bool PracticeNLP::eval_h(Ipopt::Index n,
               //! Hessian of the Lagrangian
               HessLagrange = costHessian + gHessian;
 
-            }
-
-          Ipopt::Index k_ = 0;
-          for (int i__=0;i__<n;i__++){
-              stackHessLagrange.segment(k_,n-i__) = HessLagrange.diagonal(i__);
-              k_ += n-i__;
+              Ipopt::Index k_ = 0;
+              for (int i__=0;i__<n;i__++){
+                  stackHessLagrange.segment(k_,n-i__) = HessLagrange.diagonal(i__);
+                  k_ += n-i__;
+                }
             }
         }
 
