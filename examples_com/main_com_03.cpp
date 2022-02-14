@@ -85,6 +85,11 @@ int main(int argv, char* argc[])
     optSettings->weights = weights;
     robot->setDifferentiationSize( optSettings->n*optSettings->numberControlPoints );
 
+    //! Set derivation routine
+    optSettings->deriveRoutine = geo::_Analytic_;
+//    optSettings->deriveRoutine = geo::_Numeric_;
+//    optSettings->deriveRoutine = geo::_BFGS_;
+
     //! Boundaries
     geo::VectorXr bound_aux;
     bound_aux = geo::VectorXr::Ones(optSettings->n,1) * 1e-3;
@@ -152,14 +157,16 @@ int main(int argv, char* argc[])
     app->Options()->SetNumericValue("tol", 1e-4);
     app->Options()->SetIntegerValue("max_iter", 5000);
     app->Options()->SetStringValue("mu_strategy", "adaptive"); ///monotone adaptive
-    app->Options()->SetStringValue("output_file", "ipopt.out");
-
-    //! limited-memory for BFGS and exact for our analytic
-    app->Options()->SetStringValue("hessian_approximation", "exact");
 
 //    app->Options()->SetStringValue("derivative_test", "second-order");
-//    app->Options()->SetStringValue("jac_c_constant", "yes");
     app->Options()->SetStringValue("nlp_scaling_method", "gradient-based");
+
+    //! Setting derivation routine
+    if(optSettings->deriveRoutine == geo::_BFGS_) {
+        app->Options()->SetStringValue("hessian_approximation", "limited-memory");
+      } else {
+        app->Options()->SetStringValue("hessian_approximation", "exact");
+      }
 
 
     //! Initialize the IpoptApplication and process the options

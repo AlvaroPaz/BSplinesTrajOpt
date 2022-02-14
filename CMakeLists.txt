@@ -38,8 +38,8 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -lrt")
 
 
-#add_library(ipopt_interface ipopt/ipopt_interface.cpp)
-#target_link_libraries(ipopt_interface ${GeoMBD_LIBRARIES} ${PQP_LIBRARIES} ${Coppelia_LIBRARIES} rt)
+add_library(ipopt_interface ipopt/ipopt_interface.cpp)
+target_link_libraries(ipopt_interface ${GeoMBD_LIBRARIES} ${PQP_LIBRARIES} ${Coppelia_LIBRARIES} rt)
 
 
 add_library(ipopt_interface_nao_iner_com_01 ipopt/ipopt_interface_nao_iner_com_01)
@@ -49,18 +49,18 @@ add_library(ipopt_interface_nao_iner_com ipopt/ipopt_interface_nao_iner_com)
 target_link_libraries(ipopt_interface_nao_iner_com ${GeoMBD_LIBRARIES} ${PQP_LIBRARIES} ${Coppelia_LIBRARIES} rt)
 
 
-#add_library(ipopt_interface_nao_iner_mu_01 ipopt/ipopt_interface_nao_iner_mu_01)
-#target_link_libraries(ipopt_interface_nao_iner_mu_01 ${GeoMBD_LIBRARIES} ${PQP_LIBRARIES} ${Coppelia_LIBRARIES} rt)
+add_library(ipopt_interface_nao_iner_mu_01 ipopt/ipopt_interface_nao_iner_mu_01)
+target_link_libraries(ipopt_interface_nao_iner_mu_01 ${GeoMBD_LIBRARIES} ${PQP_LIBRARIES} ${Coppelia_LIBRARIES} rt)
 
-#add_library(ipopt_interface_nao_iner_mu ipopt/ipopt_interface_nao_iner_mu)
-#target_link_libraries(ipopt_interface_nao_iner_mu ${GeoMBD_LIBRARIES} ${PQP_LIBRARIES} ${Coppelia_LIBRARIES} rt)
+add_library(ipopt_interface_nao_iner_mu ipopt/ipopt_interface_nao_iner_mu)
+target_link_libraries(ipopt_interface_nao_iner_mu ${GeoMBD_LIBRARIES} ${PQP_LIBRARIES} ${Coppelia_LIBRARIES} rt)
 
 
-#add_subdirectory(examples)
+add_subdirectory(examples)
 
 add_subdirectory(examples_com)
 
-#add_subdirectory(examples_mu)
+add_subdirectory(examples_mu)
 
-#add_subdirectory(time_tests)
+add_subdirectory(time_tests)
 

@@ -99,6 +99,8 @@ PracticeNLP::PracticeNLP( std::shared_ptr< geo::MultiBody > robot, std::shared_p
     // Set final generalized velocity
     this->finalGeneralizedVelocity = robotSettings->finalGeneralizedVelocity;
 
+    itHess = 0;
+
     myfile_1.open ("qData.txt");
     myfile_2.open ("dqData.txt");
     myfile_3.open ("ddqData.txt");
@@ -270,7 +272,7 @@ bool PracticeNLP::get_starting_point(Ipopt::Index n,
 }
 
 //! returns the value of the objective function
-bool PracticeNLP::eval_f(Ipopt::Index n, 
+bool PracticeNLP::eval_f(Ipopt::Index n,
                          const Ipopt::Number* x,
                          bool new_x, Ipopt::Number& obj_value)
 {
@@ -294,22 +296,49 @@ bool PracticeNLP::eval_f(Ipopt::Index n,
 bool PracticeNLP::eval_grad_f(Ipopt::Index n, const Ipopt::Number* x, bool new_x, Ipopt::Number* grad_f)
 {
 
-    assert(n == controlPoints.size());
+  assert(n == controlPoints.size());
 
-    //! casting decision variable
-    MapVec controlPoints( x, n );
+  //! casting decision variable
+  MapVec controlPoints( x, n );
 
-    //! objective function evaluation, first partial derivative enabled
-    robotNonlinearProblem->computeObjectiveFunction(controlPoints, weights, true, false);
+  if(robotSettings->deriveRoutine == geo::_Analytic_) {
 
-    //! casting the retrieved cost gradient
-    Map<geo::MatrixXr>( grad_f, 1, n ) = robotNonlinearProblem->getCostGradient();
+      //! objective function evaluation, first partial derivative enabled
+      robotNonlinearProblem->computeObjectiveFunction(controlPoints, weights, true, false);
 
-    return true;
+      //! casting the retrieved cost gradient
+      Map<geo::MatrixXr>( grad_f, 1, n ) = robotNonlinearProblem->getCostGradient();
+
+    } else {
+      //! first objective function evaluation
+      robotNonlinearProblem->computeObjectiveFunction(controlPoints, weights, false, false);
+
+      auto cost_exa = robotNonlinearProblem->getCost();
+      numericD_cost = geo::MatrixXr::Zero(1, n);
+
+      double inc_c = 1e-8;
+      for(short int iter = 0 ; iter < n ; iter++){
+          //! wrt c
+          c_aux = controlPoints;
+          c_aux(iter) += inc_c;
+
+          //! objective function evaluation
+          robotNonlinearProblem->computeObjectiveFunction(c_aux, weights, false, false);
+
+          auto temporalCost = robotNonlinearProblem->getCost();
+
+          numericD_cost(iter) = (temporalCost-cost_exa)/inc_c;
+        }
+
+      //! casting the retrieved cost gradient
+      Map<geo::MatrixXr>( grad_f, 1, n ) = numericD_cost;
+    }
+
+  return true;
 }
 
 //! return the value of the constraints: g(x)
-bool PracticeNLP::eval_g(Ipopt::Index n, 
+bool PracticeNLP::eval_g(Ipopt::Index n,
                          const Ipopt::Number* x,
                          bool new_x,
                          Ipopt::Index m,
@@ -323,7 +352,7 @@ bool PracticeNLP::eval_g(Ipopt::Index n,
     MapVec controlPoints( x, n );
 
     //! constraints evaluation, partial derivatives disabled
-    robotNonlinearProblem->computeConstraints(controlPoints, false, false);
+    robotNonlinearProblem->computeConstraintsII(controlPoints, false, false);
 
     //! casting the retrieved constraints
     Map<geo::MatrixXr>( g, m, 1 ) = robotNonlinearProblem->getConstraints();
@@ -332,7 +361,7 @@ bool PracticeNLP::eval_g(Ipopt::Index n,
 }
 
 //! return the structure or values of the jacobian
-bool PracticeNLP::eval_jac_g(Ipopt::Index n, 
+bool PracticeNLP::eval_jac_g(Ipopt::Index n,
                              const Ipopt::Number* x, bool new_x,
                              Ipopt::Index m,
                              Ipopt::Index nele_jac,
@@ -340,32 +369,59 @@ bool PracticeNLP::eval_jac_g(Ipopt::Index n,
                              Ipopt::Index *jCol,
                              Ipopt::Number* values)
 {
-    if (values == NULL) {
+  if (values == NULL) {
 
-        Ipopt::Index idx=0;
-        for (Ipopt::Index row = 0; row < m; row++) {
-            for (Ipopt::Index col = 0; col < n; col++) {
-                iRow[idx] = row;
-                jCol[idx] = col;
-                idx++;
+      Ipopt::Index idx=0;
+      for (Ipopt::Index row = 0; row < m; row++) {
+          for (Ipopt::Index col = 0; col < n; col++) {
+              iRow[idx] = row;
+              jCol[idx] = col;
+              idx++;
             }
         }
 
     }
-    else {
+  else {
 
-        //! Casting decision variable
-        MapVec controlPoints( x, n );
+      //! Casting decision variable
+      MapVec controlPoints( x, n );
 
-        //! constraints evaluation, partial derivatives enabled
-        robotNonlinearProblem->computeConstraints(controlPoints, true, false);
+      if(robotSettings->deriveRoutine == geo::_Analytic_) {
 
-        //! casting the retrieved constraints Jacobian
-        Map<geo::MatrixXr>( values, m, n ) = robotNonlinearProblem->getConstraintsJacobian();
+          //! constraints evaluation, first partial derivative enabled
+          robotNonlinearProblem->computeConstraintsII(controlPoints, true, false);
+
+          //! casting the retrieved constraints Jacobian
+          Map<geo::MatrixXr>( values, m, n ) = robotNonlinearProblem->getConstraintsJacobian();
+
+        } else {
+          //! first constraints evaluation
+          robotNonlinearProblem->computeConstraints(controlPoints, false, false);
+
+          auto Const_exa = robotNonlinearProblem->getConstraints();
+          numericD_rest = geo::MatrixXr::Zero(m, n);
+
+          double inc_c = 1e-8;
+          for(short int iter = 0 ; iter < n ; iter++){
+              //! wrt c
+              c_aux = controlPoints;
+              c_aux(iter) += inc_c;
+
+              //! constraints evaluation
+              robotNonlinearProblem->computeConstraints(c_aux, false, false);
+
+              auto temporalConst = robotNonlinearProblem->getConstraints();
+
+              numericD_rest.col(iter) = (temporalConst-Const_exa)/inc_c;
+            }
+
+          //! casting the retrieved constraints Jacobian
+          Map<geo::MatrixXr>( values, m, n ) = numericD_rest;
+        }
 
     }
 
-    return true;
+  return true;
 }
 
 //! Hessian of the Lagrangian
@@ -381,57 +437,161 @@ bool PracticeNLP::eval_h(Ipopt::Index n,
                          Ipopt::Index* jCol,
                          Ipopt::Number* values)
 {
-    if (values == NULL) {
+  if (values == NULL) {
 
-        Ipopt::Index idx=0;
-        Ipopt::Index j__ = 0;
-        for (Ipopt::Index i_ = 0; i_ < n; i_++) {
-            for (Ipopt::Index j_ = 0; j_ < (n-j__); j_++) {
-                iRow[idx] = j_;
-                jCol[idx] = j_ + j__;
-                idx++;
+      if(robotSettings->deriveRoutine == geo::_Analytic_) {
+
+          Ipopt::Index idx=0;
+          for (Ipopt::Index i_ = 0; i_ < n; i_++) {
+              for (Ipopt::Index j_ = i_; j_ < n; j_++) {
+                  iRow[idx] = i_;
+                  jCol[idx] = j_;
+                  idx++;
+                }
             }
-            j__++;
-        }
+          assert(idx == nele_hess);
 
-        assert(idx == nele_hess);
+        } else {
+
+          Ipopt::Index idx=0;
+          Ipopt::Index j__ = 0;
+          for (Ipopt::Index i_ = 0; i_ < n; i_++) {
+              for (Ipopt::Index j_ = 0; j_ < (n-j__); j_++) {
+                  iRow[idx] = j_;
+                  jCol[idx] = j_ + j__;
+                  idx++;
+                }
+              j__++;
+            }
+          assert(idx == nele_hess);
+        }
     }
-    else {
-        //! Casting decision variable
-        MapVec controlPoints( x, n );
+  else {
 
-        //! Casting lambda
-        MapVec eigenLambda( lambda, m );
+      if (itHess == 0) {
 
-        //! Cost-function Hessian evaluation
-        if (new_x) {
-            if (obj_factor!=0) robotNonlinearProblem->computeObjectiveFunction(controlPoints, weights, true, true);
-            robotNonlinearProblem->computeConstraints(controlPoints, true, true);
+          stackHessLagrange = geo::VectorXr::Zero(nele_hess,1);
+
+          //! Casting decision variable
+          MapVec controlPoints( x, n );
+
+          //! Casting lambda
+          MapVec eigenLambda( lambda, m );
+
+          if(robotSettings->deriveRoutine == geo::_Analytic_) {
+
+
+              //! Cost-function Hessian evaluation
+              if (obj_factor!=0) robotNonlinearProblem->computeContractedCostFunction(controlPoints, weights, true, true);
+              robotNonlinearProblem->computeContractedConstraints(controlPoints, true, true);
+
+              //! Triangulating and casting the retrieved symmetric cost Hessian
+              stackHessLagrange = obj_factor*robotNonlinearProblem->getContractedCostHessian();
+
+              //! Triangulating and casting the retrieved symmetric constraints Hessian
+              stackHessLagrange += robotNonlinearProblem->getContractedConstraintsHessian().transpose() * eigenLambda;
+
+
+            } else {
+              //! first functions evaluation
+              robotNonlinearProblem->computeObjectiveFunction(controlPoints, weights, false, false);
+              robotNonlinearProblem->computeConstraints(controlPoints, false, false);
+
+              auto cost_exa = robotNonlinearProblem->getCost();
+              auto rest_exa = robotNonlinearProblem->getConstraints();
+
+              //! f(x+h) and f(x+k) evaluation
+              double h__ = 1e-4;
+              double k__ = 1e-4;
+              double hk__ = h__*k__;
+
+              geo::VectorXr f_h(n), f_k(n);
+              geo::MatrixXr g_h(m,n), g_k(m,n);
+
+              for(short int iter = 0 ; iter < n ; iter++){
+                  //! h variation
+                  c_aux = controlPoints;
+                  c_aux(iter) += h__;
+
+                  //! functions evaluation
+                  robotNonlinearProblem->computeObjectiveFunction(c_aux, weights, false, false);
+                  f_h(iter) = robotNonlinearProblem->getCost();
+
+                  robotNonlinearProblem->computeConstraintsII(c_aux, false, false);
+                  g_h.col(iter) = robotNonlinearProblem->getConstraints();
+
+                  //! k variation
+                  c_aux = controlPoints;
+                  c_aux(iter) += k__;
+
+                  //! functions evaluation
+                  robotNonlinearProblem->computeObjectiveFunction(c_aux, weights, false, false);
+                  f_k(iter) = robotNonlinearProblem->getCost();
+
+                  robotNonlinearProblem->computeConstraints(c_aux, false, false);
+                  g_k.col(iter) = robotNonlinearProblem->getConstraints();
+                }
+
+              geo::MatrixXr temporalD_cost(1, n);
+              geo::MatrixXr temporalD_rest(m, n);
+
+              numericDD_cost = geo::MatrixXr::Zero(1, n*n);
+              numericDD_rest = geo::MatrixXr::Zero(m, n*n);
+
+              for(int i__ = 0 ; i__ < n ; i__++){
+                  //! h variation
+                  c_aux = controlPoints;
+                  c_aux(i__) += h__;
+
+                  for(int j__ = 0 ; j__ < n ; j__++){
+                      //! k variation
+                      c_aux_in = c_aux;
+                      c_aux_in(j__) += k__;
+
+                      //! f(x+h+k) evaluation
+                      robotNonlinearProblem->computeObjectiveFunction(c_aux_in, weights, false, false);
+
+                      double f_h_k = robotNonlinearProblem->getCost();
+
+                      temporalD_cost(j__) = (f_h_k - f_h(i__) - f_k(j__) + cost_exa)/hk__;
+
+                      //! g(x+h+k) evaluation
+                      robotNonlinearProblem->computeConstraints(c_aux_in, false, false);
+
+                      geo::VectorXr g_h_k = robotNonlinearProblem->getConstraints();
+
+                      temporalD_rest.col(j__) = (g_h_k - g_h.col(i__) - g_k.col(j__) + rest_exa)/hk__;
+                    }
+                  numericDD_cost.middleCols(i__*n, n) = temporalD_cost;
+                  numericDD_rest.middleCols(i__*n, n) = temporalD_rest;
+                }
+
+              //! Triangulating and casting the retrieved symmetric cost Hessian
+              costHessian = obj_factor*numericDD_cost;
+              costHessian.resize(n, n);
+
+              //! Triangulating and casting the retrieved symmetric constraints Hessian
+              gHessian = eigenLambda.transpose()*numericDD_rest;
+              gHessian.resize(n, n);
+
+              //! Hessian of the Lagrangian
+              HessLagrange = costHessian + gHessian;
+
+              Ipopt::Index k_ = 0;
+              for (int i__=0;i__<n;i__++){
+                  stackHessLagrange.segment(k_,n-i__) = HessLagrange.diagonal(i__);
+                  k_ += n-i__;
+                }
+            }
         }
 
-        //! Triangulating and casting the retrieved symmetric cost Hessian
-        geo::MatrixXr costHessian = obj_factor*robotNonlinearProblem->getCostHessian();
+      Map<geo::MatrixXr>( values, nele_hess, 1 ) = stackHessLagrange;
 
-        //! Triangulating and casting the retrieved symmetric constraints Hessian
-        geo::MatrixXr gHessian = eigenLambda.transpose()*robotNonlinearProblem->getConstraintsHessian();
-        gHessian.resize(n, n);
-
-        //! Hessian of the Lagrangian
-        geo::MatrixXr HessLagrange = costHessian + gHessian;
-
-        geo::VectorXr stackHessLagrange(nele_hess);
-
-        Ipopt::Index k_ = 0;
-        for (int i__=0;i__<n;i__++){
-            stackHessLagrange.segment(k_,n-i__) = HessLagrange.diagonal(i__);
-            k_ += n-i__;
-        }
-
-        Map<geo::MatrixXr>( values, nele_hess, 1 ) = stackHessLagrange;
-
+      itHess++;
+      if(itHess == 9) itHess = 0;  //! default 9
     }
 
-    return true;
+  return true;
 }
 
 void PracticeNLP::finalize_solution(Ipopt::SolverReturn status,

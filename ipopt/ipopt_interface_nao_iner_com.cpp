@@ -588,7 +588,7 @@ bool PracticeNLP::eval_h(Ipopt::Index n,
       Map<geo::MatrixXr>( values, nele_hess, 1 ) = stackHessLagrange;
 
       itHess++;
-      if(itHess == 8) itHess = 0;
+      if(itHess == 8) itHess = 0;  //! default 8
     }
 
   return true;

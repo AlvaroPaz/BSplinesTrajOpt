@@ -66,6 +66,9 @@ protected:
     //! Number of partitions
     int numberPartitions;
 
+    //! Hessian iterator
+    int itHess;
+
     //! Number of constraints
     int numberConstraints;
 
@@ -74,6 +77,8 @@ protected:
 
     //! Weights vector for cost function
     geo::VectorXr weights;
+
+    geo::VectorXr stackHessLagrange;
 
     //! Initial and final times
     geo::real_t si, sf;
@@ -92,6 +97,13 @@ protected:
 
     //! Final generalized velocity
     geo::VectorXr finalGeneralizedVelocity;
+
+    //! Variables for numeric differentiation
+    geo::MatrixXr numericD_cost, numericD_rest, numericDD_cost, numericDD_rest;
+
+    geo::VectorXr c_aux, c_aux_in;
+
+    geo::MatrixXr costHessian, gHessian, HessLagrange;
 
     // --------------------------------------------
     // Methods
