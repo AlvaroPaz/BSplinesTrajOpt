@@ -3,6 +3,10 @@
 
 ![Alt text](data/torus.png?raw=true "Title")
 
+<p align="center">
+  <img src="data/torus.png" width="250" title="BSplines curve over torus manifold">
+</p>
+
 # Project Title
 
 Simple overview of use/purpose.
