@@ -1,6 +1,8 @@
 # BSplinesTrajOpt
  BSplines-based robot trajectory optimization solver
 
+![Alt text](data/torus.png?raw=true "Title")
+
 # Project Title
 
 Simple overview of use/purpose.

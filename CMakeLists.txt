@@ -60,9 +60,3 @@ target_link_libraries(ipopt_interface_nao_iner_mu ${GeoMBD_LIBRARIES} ${PQP_LIBR
 
 add_subdirectory(examples)
 
-add_subdirectory(examples_com)
-
-add_subdirectory(examples_mu)
-
-add_subdirectory(time_tests)
-
