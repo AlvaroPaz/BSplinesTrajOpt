@@ -1,0 +1,34 @@
+// This file is part of Eigen, a lightweight C++ template library
+// for linear algebra.
+//
+//
+// This Source Code Form is subject to the terms of the Mozilla
+// Public License v. 2.0. If a copy of the MPL was not distributed
+// with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+#ifndef EIGEN_VANISH_PRODUCT_MODULE_H
+#define EIGEN_VANISH_PRODUCT_MODULE_H
+
+#include "../../eigen3/Eigen/Core"
+
+#include "../../eigen3/Eigen/src/Core/util/DisableStupidWarnings.h"
+
+namespace Eigen {
+
+/**
+  * \defgroup VanishProduct_Module VanishProduct module
+  *
+  * This module contains an experimental vanish product implementation.
+  *
+  * \code
+  * #include <Eigen/VanishProduct>
+  * \endcode
+  */
+
+} // namespace Eigen
+
+#include "geombd/vanishProduct.h"
+
+#include "../../eigen3/Eigen/src/Core/util/ReenableStupidWarnings.h"
+
+#endif // EIGEN_VANISH_PRODUCT_MODULE_H

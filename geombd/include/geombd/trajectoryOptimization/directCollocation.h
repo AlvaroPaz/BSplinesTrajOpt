@@ -47,6 +47,16 @@ enum DifferentiationType
 };
 
 
+//! The type of the derivation routine
+/*! \ingroup core_module  */
+enum DerivationRoutine
+{
+    _BFGS_,           /*!< Differentiate using the quasi-Newton method. */
+    _Numeric_,        /*!< Differentiate using finite differences. */
+    _Analytic_        /*!< Differentiate using exact geometric algorithms. */
+};
+
+
 //! The type of constraint
 /*! \ingroup core_module  */
 enum ConstraintType
@@ -75,16 +85,32 @@ struct robotSettingsTrajectoryOptimization {
     int numberPartitions;                   // number of partitions
     int numberConstraints;                  // number of constraints
     real_t si, sf;                          // initial and final time
-    VectorXr S;                             // vector time parameter    
+    VectorXr S;                             // vector time parameter
+    VectorXr weights;                       // weights vector for cost function
+    int numberFinalInterpolation;           // number of partitions of the final interpolation
 
     //! Differentiate with respect to
     DifferentiationType DifferentiationWRT;
+
+    //! Derivation routine
+    DerivationRoutine deriveRoutine;
 
     //! Boundaries
     VectorXr initialConfiguration;
     VectorXr finalConfiguration;
     VectorXr initialGeneralizedVelocity;
     VectorXr finalGeneralizedVelocity;
+
+    //! Upper and lower tolerances for baundaries
+    VectorXr qiBound_u;
+    VectorXr qfBound_u;
+    Vector2r comBound_u;
+    SpatialVector muBound_u;
+
+    VectorXr qiBound_l;
+    VectorXr qfBound_l;
+    Vector2r comBound_l;
+    SpatialVector muBound_l;
 
     //! Constraints customization
     ConstraintsStack StackConstraints;
@@ -166,6 +192,10 @@ class DirectCollocation
     //! Hessian of cost function
     MatrixXr H;
 
+    //! Non redundant info of cost function Hessian
+    VectorXr H_c;
+    RowVectorXr H_r;
+
     //! number of constraints
     int numberConstraints;
 
@@ -174,6 +204,9 @@ class DirectCollocation
 
     //! Jacobian of constraints
     MatrixXr JacobianConstraints;
+
+    //! Jacobian of constraints
+    MatrixXr HessianConstraints, HessianConstraints_c;
 
     //! basis function
     MatrixXr B;
@@ -185,7 +218,7 @@ class DirectCollocation
     MatrixXr ddB;
 
     //! Kronecker product of D_q and D_q
-    MatrixXr DD_q;
+    MatrixXr DD_q, DD_q_Van;
 
     //! initial configuration
     VectorXr q_initial;
@@ -203,7 +236,7 @@ class DirectCollocation
     VectorXr q, dq, ddq, Tau;
 
     //! Variables for differentiation
-    MatrixXr Diff_Tau, DDiff_Tau;
+    MatrixXr Diff_Tau, DDiff_Tau, DDiff_Tau_c;
     MatrixXr D_X, D_q, D_dq, D_ddq;
 
 
@@ -239,13 +272,32 @@ class DirectCollocation
          /*! \param control points c and boolean flags for computing partial derivatives
          * \return void
          */
-    void computeObjectiveFunction(const MatrixXr &c, const bool &computeFirstDerivative, const bool &computeSecondDerivative);
+    void computeObjectiveFunction(const MatrixXr &c, const VectorXr &weights, const bool &computeFirstDerivative, const bool &computeSecondDerivative);
+
+
+    //! Compute the objective function
+         /*! \param control points c and boolean flags for computing partial derivatives
+         * \return void
+         */
+    void computeContractedCostFunction(const MatrixXr &c, const VectorXr &weights, const bool &computeFirstDerivative, const bool &computeSecondDerivative);
 
     //! Compute constraints of NLP
          /*! \param control points c and boolean flag for computing partials
          * \return void
          */
-    void computeConstraints(const MatrixXr &c, const bool &computePartialDerivatives);
+    void computeConstraints(const MatrixXr &c, const bool &computeFirstDerivative, const bool &computeSecondDerivative);
+
+    //! Compute constraints of NLP
+         /*! \param control points c and boolean flag for computing partials
+         * \return void
+         */
+    void computeConstraintsII(const MatrixXr &c, const bool &computeFirstDerivative, const bool &computeSecondDerivative);
+
+    //! Compute constraints of NLP
+         /*! \param control points c and boolean flag for computing partials
+         * \return void
+         */
+    void computeContractedConstraints(const MatrixXr &c, const bool &computeFirstDerivative, const bool &computeSecondDerivative);
 
     //! Set initial configuration
          /*! \param initial configuration
@@ -289,6 +341,12 @@ class DirectCollocation
              */
     MatrixXr getCostHessian(){ return H; }
 
+    //! Get the cost function Hessian
+    /*! \param none
+        \return a MatrixXr element
+             */
+    MatrixXr getContractedCostHessian(){ return H_c; }
+
     //! Get the constraints value
     /*! \param none
         \return a real vector
@@ -300,6 +358,18 @@ class DirectCollocation
         \return a MatrixXr element
              */
     MatrixXr getConstraintsJacobian(){ return JacobianConstraints; }
+
+    //! Get the constraints Hessian
+    /*! \param none
+        \return a MatrixXr element
+             */
+    MatrixXr getConstraintsHessian(){ return HessianConstraints; }
+
+    //! Get the constraints Hessian
+    /*! \param none
+        \return a MatrixXr element
+             */
+    MatrixXr getContractedConstraintsHessian(){ return HessianConstraints_c; }
 
     //! Get the basis function
     /*! \param none

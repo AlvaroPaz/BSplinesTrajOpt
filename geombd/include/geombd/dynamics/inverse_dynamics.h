@@ -33,6 +33,10 @@
 
 #include <memory>
 #include "geombd/core.h"
+#include "geombd/VanishProduct"
+
+//int Vanisher_i = 0, Vanisher_n = 1, Vanisher_m = 2;
+//int Vanisher_i, Vanisher_n, Vanisher_m;
 
 namespace geo{
 
@@ -54,8 +58,11 @@ class InverseDynamics : public Kinematics
         this->n = robot->getDoF();
         this->m = robot->getDifferentiationSize();
 
+        ::Vanisher_n = this->n;   ::Vanisher_m = this->m;
+
         this->Diff_Tau = MatrixXr::Zero(n,m);
         this->DDiff_Tau = MatrixXr::Zero(n,m*m);
+        this->DDiff_Tau_Contracted = MatrixXr::Zero(n,m*(m+1)/2);
 
         this->q = VectorXr::Zero(n,1);
         this->dq = VectorXr::Zero(n,1);
@@ -79,6 +86,7 @@ class InverseDynamics : public Kinematics
 
 
         this->DD_q = MatrixXr::Zero(n,m*m);
+        this->DD_q_Van = MatrixXr::Zero(n,m*(m+1)/2);
 
 
         Diff_Twist.conservativeResize(Eigen::NoChange, m);
@@ -109,7 +117,7 @@ class InverseDynamics : public Kinematics
 
         SK.clear();             SK_2.clear();
         //! Forward recursion
-        int ID = 0;
+        int ID = 0;  hasChild.resize(n);
         for ( bodyIterator = bodies.begin()+1; bodyIterator != bodies.end(); bodyIterator++ )
         {
             tempBody = (DynamicBody *)(*bodyIterator);
@@ -127,15 +135,18 @@ class InverseDynamics : public Kinematics
 
             //! Compute the constant term kron(D_q,D_q)
             DD_q.row(ID) = Eigen::kroneckerProduct(D_q.row(ID),D_q.row(ID));
+            DD_q_Van.row(ID) = Eigen::vanishProduct(D_q.row(ID),D_q.row(ID));
 
             //! Pre-allocation to spped up computation
             tempBody->setDiff_Twist(Diff_Twist);
             tempBody->setDiff_Acceleration(Diff_Acceleration);
             tempBody->setDiff_Wrench(Diff_Wrench);
 
-            DD_Twist.at(ID).conservativeResize(Eigen::NoChange, m*m);
-            DD_Acceleration.at(ID).conservativeResize(Eigen::NoChange, m*m);
-            DD_Wrench.at(ID).conservativeResize(Eigen::NoChange, m*m);
+            DD_Twist.at(ID).conservativeResize(Eigen::NoChange, m*(m+1)/2);
+            DD_Acceleration.at(ID).conservativeResize(Eigen::NoChange, m*(m+1)/2);
+            DD_Wrench.at(ID).conservativeResize(Eigen::NoChange, m*(m+1)/2);
+
+            hasChild(ID) = robot->getBodyChildren(tempBody->getId()).size();
 
             ID++;
         }
@@ -155,6 +166,16 @@ class InverseDynamics : public Kinematics
         this->KCM = KCMaux;
         KCMaux.setIdentity();
         this->KCM += KCMaux;
+
+        //! Build Vanished Kronecker Commutation Matrix
+        KCM_van.resize(m*m, m*(m+1)/2);
+        int j_ = 0, k_ = 0, w_ = 0;
+        for(i_ = 0 ; i_ < m*m ; i_ += m){
+            KCM_van.middleCols(w_, m-k_) = KCM.middleCols(j_, m-k_);
+            w_ += m - k_;
+            k_++;
+            j_ += m + 1;
+        }
 
         //! Variables for Center of Mass
         this->multibodyMass = robot->getTotalMass();
@@ -202,7 +223,7 @@ class InverseDynamics : public Kinematics
 
     //! Variables for first differentiation
     MatrixXr D_X, D_q, D_dq, D_ddq;
-    MatrixXr DD_q;
+    MatrixXr DD_q, DD_q_Van;
 
     SpatialVector Twist, Acceleration, Wrench;
     MatrixXr Aux_I, Aux_II, Diff_Tau;
@@ -210,14 +231,16 @@ class InverseDynamics : public Kinematics
     SpatialMatrix adjointScrew, adjointDualScrew;
     D_SpatialVector inputI, inputII;
     D_SpatialVector inputIII,inputIV,inputV;
+    VectorXr hasChild;
 
     std::vector< Matrix3r > SK, SK_2;
 
     //! Variables for second differentiation
     D_SpatialVector DDiff_Twist, DDiff_Acceleration, DDiff_Wrench, ChildDDiff_Wrench;
     std::vector< D_SpatialVector > DD_Twist, DD_Acceleration, DD_Wrench;
-    MatrixXr DDiff_Tau;
+    MatrixXr DDiff_Tau, DDiff_Tau_Contracted;
     SparseMatrixXr KCM;
+    SparseMatrixXr KCM_van;
 
     //! Variables for Center of Mass
     Vector3r multibodyCoM;          // The multibody center of mass
@@ -228,7 +251,8 @@ class InverseDynamics : public Kinematics
     std::vector< MatrixXr > D_G, D_Gv;    // Differentiation of G
     std::vector< MatrixXr > DD_G;   // Second differentiation of G
     MatrixXr D_multibodyCoM;        // Differentiation of the multibody center of mass
-    MatrixXr DD_multibodyCoM;        // Second differentiation of the multibody center of mass
+    MatrixXr DD_multibodyCoM;       // Second differentiation of the multibody center of mass
+    MatrixXr DD_ContractedCoM;       // Second differentiation of the multibody center of mass
     short int sizeDecisionVector, parentBodyId;
 
     //! Flags for updating
@@ -237,6 +261,7 @@ class InverseDynamics : public Kinematics
     //! Variables for centroidal momentum
     SpatialVector SpatialMomentum, CentroidalMomentum;
     D_SpatialVector D_SpatialMomentum, D_CentroidalMomentum;
+    D_SpatialVector DD_SpatialMomentum, DD_ContractedSpatialMomentum, DD_CentroidalMomentum, DD_ContractedMu;
 
     public:
 
@@ -262,23 +287,59 @@ class InverseDynamics : public Kinematics
          */
     void computeInverseDynamics(const bool &computeFirstDerivative, const bool &computeSecondDerivative);
 
+    //! Compute the Inverse Dynamics for the multibody system
+         /*! \param boolean flag for computing partials
+         * \return void
+         */
+    void computeContractedInverseDynamics(const bool &computeFirstDerivative, const bool &computeSecondDerivative);
+
     //! Compute the multibody spatial momentum at inertial frame
          /*! \param boolean flag for computing partials
          * \return void
          */
-    void computeSpatialMomentum(const bool &computePartialDerivatives);
+    void computeContractedSpatialMomentum(const bool &firstDerivative, const bool &secondDerivative);
+
+    //! Compute the multibody spatial momentum at inertial frame
+         /*! \param boolean flag for computing partials
+         * \return void
+         */
+    void computeSpatialMomentum(const bool &firstDerivative, const bool &secondDerivative);
 
     //! Compute the multibody centroidal momentum
          /*! \param boolean flag for computing partials
          * \return void
          */
-    void computeCentroidalMomentum(const bool &computePartialDerivatives);
+    void computeCentroidalMomentumII(const bool &firstDerivative, const bool &secondDerivative);
+
+    //! Compute the multibody centroidal momentum
+         /*! \param boolean flag for computing partials
+         * \return void
+         */
+    void computeCentroidalMomentum(const bool &firstDerivative, const bool &secondDerivative);
+
+    //! Compute the multibody centroidal momentum
+         /*! \param boolean flag for computing partials
+         * \return void
+         */
+    void computeContractedCentroidalMomentum(const bool &firstDerivative, const bool &secondDerivative);
 
     //! Compute the center of mass of the whole multibody system
          /*! \param boolean flag for computing partials
          * \return void
          */
     void computeCenterOfMass(const bool &computeFirstDerivative, const bool &computeSecondDerivative);
+
+    //! Compute the center of mass of the whole multibody system
+         /*! \param boolean flag for computing partials
+         * \return void
+         */
+    void computeCenterOfMassII(const bool &computeFirstDerivative, const bool &computeSecondDerivative);
+
+    //! Compute the center of mass of the whole multibody system
+         /*! \param boolean flag for computing partials
+         * \return void
+         */
+    void computeContractedCenterOfMass(const bool &computeFirstDerivative, const bool &computeSecondDerivative);
 
     //! Set generalized coordinates
          /*! \param configuration, generalized velocity, generalized acceleration
@@ -298,6 +359,12 @@ class InverseDynamics : public Kinematics
          */
     void setGeneralizedCoordinatesSecondDifferentiation( const MatrixXr &DD_q );
 
+    //! Set generalized coordinates differentiation
+         /*! \param D configuration, D generalized velocity, D generalized acceleration
+         * \return void
+         */
+    void setContractedDD_q( const MatrixXr &DD_q_Van );
+
     //! Get generalized torques
     /*! \param none
         \return a real_t eigen vector
@@ -316,23 +383,35 @@ class InverseDynamics : public Kinematics
              */
     MatrixXr getGeneralizedTorquesSecondDifferentiation(){ return DDiff_Tau; }
 
+    //! Get generalized torques second differentiation
+    /*! \param none
+        \return a real_t eigen matrix
+             */
+    MatrixXr getContractedDDTorque(){ return DDiff_Tau_Contracted; }
+
     //! Get the multibody center of mass
     /*! \param none
         \return a Vector3r
              */
-    Vector3r getMultibodyCoM(){ return multibodyCoM; }
+    Vector3r getRobotCoM(){ return multibodyCoM; }
 
     //! Get the multibody center of mass differentiation
     /*! \param none
         \return a MatrixXr
              */
-    MatrixXr getMultibodyCoMDifferentiation(){ return D_multibodyCoM; }
+    MatrixXr getRobotD_CoM(){ return D_multibodyCoM; }
 
     //! Get the multibody center of mass differentiation
     /*! \param none
         \return a MatrixXr
              */
-    MatrixXr getMultibodyCoMSecondDifferentiation(){ return DD_multibodyCoM; }
+    MatrixXr getRobotDD_CoM(){ return DD_multibodyCoM; }
+
+    //! Get the multibody center of mass differentiation
+    /*! \param none
+        \return a MatrixXr
+             */
+    MatrixXr getRobotDD_ContractedCoM(){ return DD_ContractedCoM; }
 
     //! Get the multibody spatial momentum
     /*! \param none
@@ -344,7 +423,19 @@ class InverseDynamics : public Kinematics
     /*! \param none
         \return a D_SpatialVector
              */
-    D_SpatialVector getSpatialMomentumDifferentiation(){ return D_SpatialMomentum; }
+    D_SpatialVector getD_SpatialMomentum(){ return D_SpatialMomentum; }
+
+    //! Get the multibody spatial momentum differentiation
+    /*! \param none
+        \return a D_SpatialVector
+             */
+    D_SpatialVector getDD_SpatialMomentum(){ return DD_SpatialMomentum; }
+
+    //! Get the multibody spatial momentum differentiation
+    /*! \param none
+        \return a D_SpatialVector
+             */
+    D_SpatialVector getDD_ContractedSpatialMomentum(){ return DD_ContractedSpatialMomentum; }
 
     //! Get the multibody centroidal momentum
     /*! \param none
@@ -356,7 +447,19 @@ class InverseDynamics : public Kinematics
     /*! \param none
         \return a D_SpatialVector
              */
-    D_SpatialVector getCentroidalMomentumDifferentiation(){ return D_CentroidalMomentum; }
+    D_SpatialVector getD_CentroidalMomentum(){ return D_CentroidalMomentum; }
+
+    //! Get the multibody centroidal momentum differentiation
+    /*! \param none
+        \return a D_SpatialVector
+             */
+    D_SpatialVector getDD_CentroidalMomentum(){ return DD_CentroidalMomentum; }
+
+    //! Get the multibody centroidal momentum differentiation
+    /*! \param none
+        \return a D_SpatialVector
+             */
+    D_SpatialVector getDD_ContractedCentroidalMomentum(){ return DD_ContractedMu; }
 
 
 protected:
