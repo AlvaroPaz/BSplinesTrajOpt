@@ -31,7 +31,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-std::string naoFile = "../../BSplinesTrajOpt/data/nao_inertial_python.urdf";
+std::string naoFile = "../../../data/nao_inertial_python.urdf";
 
 
 #include <IpIpoptApplication.hpp>
@@ -87,9 +87,9 @@ int main(int argv, char* argc[])
     robot->setDifferentiationSize( optSettings->n*optSettings->numberControlPoints );
 
     //! Set derivation routine
-//    optSettings->deriveRoutine = geo::_Analytic_;
+    optSettings->deriveRoutine = geo::_Analytic_;
 //    optSettings->deriveRoutine = geo::_Numeric_;
-    optSettings->deriveRoutine = geo::_BFGS_;
+//    optSettings->deriveRoutine = geo::_BFGS_;
 
 //    //! Simulation at 4 seconds of streaming
 //    optSettings->sf = 1.0;

@@ -16,7 +16,7 @@
 //std::string naoFile = "../../data/nao_inertial_python.urdf";
 
 
-#define __FU_PATH_PREFIX__ "../../data/TROmodels/"
+#define __FU_PATH_PREFIX__ "../../../data/TROmodels/"
 std::string urdf_dir = __FU_PATH_PREFIX__;
 
 //std::string urdf_dir = __FU_PATH_PREFIX__ "lwr.urdf"; //7

@@ -34,6 +34,16 @@ $ ./install.sh
 ```
 $ ./run.sh
 ```
+
+* Run center of mass example,
+```
+$ ./run_com_example.sh
+```
+
+* Run centroidal momentum example,
+```
+$ ./run_mu_example.sh
+```
 ## Help
 
 Any advise for common problems or issues please contact the authors.
