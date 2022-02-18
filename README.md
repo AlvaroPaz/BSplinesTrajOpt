@@ -1,72 +1,53 @@
 # BSplinesTrajOpt
- BSplines-based robot trajectory optimization solver
 
-![Alt text](data/torus.png?raw=true "Title")
+ ### BSplines-based robot trajectory optimization solver.
 
 <p align="center">
   <img src="data/torus.png" width="250" title="BSplines curve over torus manifold">
 </p>
 
-# Project Title
-
-Simple overview of use/purpose.
-
 ## Description
 
-An in-depth paragraph about your project and overview of use.
+Direct-collocation techniques with B-Splines and geometric algorithms are used to generate minimum-effort control movements. When humanoid robots are considered, the computation of such movements require to solve the robot inverse dynamics, the center of mass projection and centroidal momentum, for equilibrium purposes, and the partial derivatives of all these features. This is why Lie groups theory plays an important role here to formulate recursive, exact and fast algorithms in order to retrieve first and second order information.
 
 ## Getting Started
 
 ### Dependencies
 
-* Describe any prerequisites, libraries, OS version, etc., needed before installing program.
-* ex. Windows 10
+Project is created with:
+* [CMake](https://cmake.org/) version: 3.10.2
+* [gcc](https://gcc.gnu.org/) version: 7.5.0
+* [Eigen3](https://eigen.tuxfamily.org/index.php?title=Main_Page) version: 3.3.4
+* [CoppeliaSim](https://coppeliarobotics.com/) version: 4.0.0
 
 ### Installing
 
-* How/where to download your program
-* Any modifications needed to be made to files/folders
+* Install [Ipopt](https://coin-or.github.io/Ipopt/INSTALL.html) at your /home/\<username\> directory.
 
+* To install this project,
+```
+$ ./install.sh
+```
 ### Executing program
 
-* How to run the program
-* Step-by-step bullets
+* Run time tests,
 ```
-code blocks for commands
+$ ./run.sh
 ```
-
 ## Help
 
-Any advise for common problems or issues.
-```
-command to run if program contains helper info
-```
+Any advise for common problems or issues please contact the authors.
 
 ## Authors
 
-Contributors names and contact info
+[Alvaro Paz](https://www.linkedin.com/in/alvaro-paz-anaya/)
 
-ex. Dominique Pizzie  
-ex. [@DomPizzie](https://twitter.com/dompizzie)
+[Gustavo Arechavaleta](https://sites.google.com/site/gustavoarechavaleta/)
 
 ## Version History
-
-* 0.2
-    * Various bug fixes and optimizations
-    * See [commit change]() or See [release history]()
 * 0.1
     * Initial Release
 
 ## License
 
-This project is licensed under the [NAME HERE] License - see the LICENSE.md file for details
-
-## Acknowledgments
-
-Inspiration, code snippets, etc.
-* [awesome-readme](https://github.com/matiassingers/awesome-readme)
-* [PurpleBooth](https://gist.github.com/PurpleBooth/109311bb0361f32d87a2)
-* [dbader](https://github.com/dbader/readme-template)
-* [zenorocha](https://gist.github.com/zenorocha/4526327)
-* [fvcproductions](https://gist.github.com/fvcproductions/1bfc2d4aecb01a834b46)
-
+This project is licensed under the [MIT](https://choosealicense.com/licenses/mit/) License
