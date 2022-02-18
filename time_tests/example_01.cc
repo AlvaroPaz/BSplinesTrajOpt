@@ -1,5 +1,5 @@
 /**
- *	\file time_tests/example_01.cc
+ *	\file examples/example_01.cc
  *	\author Alvaro Paz, Gustavo Arechavaleta
  *	\version 1.0
  *	\date 2021
@@ -11,7 +11,6 @@
 
 #include "geombd/core.h"
 #include "geombd/dynamics.h"
-#include "geombd/trajectoryOptimization.h"
 
 //std::string naoFile = "../../data/nao_inertial_python.urdf";
 
@@ -31,7 +30,7 @@ using namespace Eigen;
 #define infty 100000
 
 //! Set time variables
-const int M = 1e2;    // sample size
+const int M = 1e2;    // sample size 1e2
 int k = 0;
 
 bool firstDerivative, secondDerivative;
@@ -43,7 +42,7 @@ geo::VectorXr q, dq, ddq;
 //!------------------------------------------------------------------------------!//
 void loop_CoM ( std::shared_ptr< geo::InverseDynamics > robotDynamics ) {
   for (k = 0 ; k < M ; k++) {
-      robotDynamics->computeCenterOfMassII(firstDerivative, secondDerivative);
+      robotDynamics->computeContractedCenterOfMass(firstDerivative, secondDerivative);
     }
 }
 
@@ -52,7 +51,7 @@ void loop_CoM ( std::shared_ptr< geo::InverseDynamics > robotDynamics ) {
 //!------------------------------------------------------------------------------!//
 void loop_Mu ( std::shared_ptr< geo::InverseDynamics > robotDynamics ) {
   for (k = 0 ; k < M ; k++) {
-      robotDynamics->computeCentroidalMomentum(firstDerivative, secondDerivative);
+      robotDynamics->computeContractedCentroidalMomentum(firstDerivative, secondDerivative);
     }
 }
 
@@ -61,7 +60,7 @@ void loop_Mu ( std::shared_ptr< geo::InverseDynamics > robotDynamics ) {
 //!------------------------------------------------------------------------------!//
 void loop_InvDyn ( std::shared_ptr< geo::InverseDynamics > robotDynamics ) {
   for (k = 0 ; k < M ; k++) {
-      robotDynamics->computeInverseDynamics(firstDerivative, secondDerivative);
+      robotDynamics->computeContractedInverseDynamics(firstDerivative, secondDerivative);
     }
 }
 
@@ -70,7 +69,7 @@ int main( int argc, char** argv ){
     if (argc > 1) {
         urdf_dir.append( argv[1] );
       } else {
-        urdf_dir.append( "nao_inertial_python.urdf" );
+        urdf_dir.append( "nao_inertial_python.urdf" );  // delete urdf once verifyed
       }
 
     cout << "//!----------------------------------------------------------------------!//" << endl;
@@ -106,14 +105,22 @@ int main( int argc, char** argv ){
     //! Build random basis functions
     //!------------------------------------------------------------------------------!//
     geo::MatrixXr D_q, D_dq, D_ddq;
-    D_q   = geo::MatrixXr::Random(n, diffSize);
-    D_dq  = geo::MatrixXr::Random(n, diffSize);
-    D_ddq = geo::MatrixXr::Random(n, diffSize);
+    D_q   = Eigen::kroneckerProduct(geo::RowVectorXr::LinSpaced(numberControlPoints, 1, 1*3.1416),
+                                    geo::MatrixXr::Identity(n,n));
+    D_dq  = Eigen::kroneckerProduct(geo::RowVectorXr::LinSpaced(numberControlPoints, 1, 2*3.1416),
+                                    geo::MatrixXr::Identity(n,n));
+    D_ddq = Eigen::kroneckerProduct(geo::RowVectorXr::LinSpaced(numberControlPoints, 1, 3*3.1416),
+                                    geo::MatrixXr::Identity(n,n));
     robotDynamics->setGeneralizedCoordinatesDifferentiation(D_q, D_dq, D_ddq);
 
-    geo::MatrixXr DD_q;
-    DD_q   = geo::MatrixXr::Random(n, diffSize*diffSize);;
+    geo::MatrixXr DD_q(n, diffSize*diffSize), DD_q_Van(n, diffSize*(diffSize+1)/2);
+    for(int _x_ = 0; _x_ < n; _x_++) {
+        DD_q.row(_x_) = Eigen::kroneckerProduct(D_q.row(_x_), D_q.row(_x_));
+        DD_q_Van.row(_x_) = Eigen::vanishProduct(D_q.row(_x_), D_q.row(_x_));
+      }
+
     robotDynamics->setGeneralizedCoordinatesSecondDifferentiation( DD_q );
+    robotDynamics->setContractedDD_q( DD_q_Van );
 
     //! Time settings
     //!------------------------------------------------------------------------------!//
@@ -167,7 +174,7 @@ int main( int argc, char** argv ){
 
     //! Time casting
     //!------------------------------------------------------------------------------!//
-    auto DD_CoM = robotDynamics->getRobotDD_CoM();
+    auto DD_CoM = robotDynamics->getRobotDD_ContractedCoM();
     t_total = (int) std::chrono::duration_cast< time_preci >( t2 - t1 ).count();
     cout << "Center of mass + D + DD = " << t_total/M << endl;
 
@@ -216,7 +223,7 @@ int main( int argc, char** argv ){
 
     //! Time casting
     //!------------------------------------------------------------------------------!//
-    auto DD_Mu = robotDynamics->getDD_CentroidalMomentum();
+    auto DD_Mu = robotDynamics->getDD_ContractedCentroidalMomentum();
     t_total = (int) std::chrono::duration_cast< time_preci >( t2 - t1 ).count();
     cout << "Centroidal momentum + D + DD = " << t_total/M << endl;
 
@@ -265,11 +272,9 @@ int main( int argc, char** argv ){
 
     //! Time casting
     //!------------------------------------------------------------------------------!//
-    auto DD_Tau = robotDynamics->getGeneralizedTorquesSecondDifferentiation();
+    auto DD_Tau = robotDynamics->getContractedDDTorque();
     t_total = (int) std::chrono::duration_cast< time_preci >( t2 - t1 ).count();
     cout << "Inverse dynamics + D + DD = " << t_total/M << endl;
 
-
 return 0;
 }
-

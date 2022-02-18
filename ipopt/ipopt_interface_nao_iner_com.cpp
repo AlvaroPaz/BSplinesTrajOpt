@@ -50,7 +50,7 @@ using namespace Eigen;
 #include <cassert>
 #include <iostream>
 
-#include "ipopt_interface_nao_iner_com.hpp"  // it said "ipopt_interface_nao_com_test.hpp" instead
+#include "ipopt_interface_nao_iner_com.hpp"
 
 typedef Eigen::Map<const geo::VectorXr> MapVec;
 

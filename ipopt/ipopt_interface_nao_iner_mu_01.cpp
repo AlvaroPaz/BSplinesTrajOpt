@@ -8,7 +8,7 @@
 // Modified: brian paden Aug-2017
 
 /**
- *	\file ipopt_interface_01.cpp
+ *	\file ipopt/ipopt_interface_nao_iner_mu_01.cpp
  *	\author Alvaro Paz, Gustavo Arechavaleta
  *	\version 1.0
  *	\date 2020

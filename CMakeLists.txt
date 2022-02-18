@@ -5,8 +5,9 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall")
 set(CMAKE_CXX_FLAGS_RELEASE "-msse -msse2 -msse3 -O3 -pedantic -DNDEBUG")
 
-set(IPOPT_LIBRARY_DIRS /home/alvaropaz/MY_IPOPT_DIR/build/lib)
-set(IPOPT_INCLUDE_DIRS /home/alvaropaz/MY_IPOPT_DIR/build/include/coin)
+
+set(IPOPT_LIBRARY_DIRS /home/$ENV{USERNAME}/MY_IPOPT_DIR/build/lib)
+set(IPOPT_INCLUDE_DIRS /home/$ENV{USERNAME}/MY_IPOPT_DIR/build/include/coin)
 
 message("ipopt binary path is: " ${IPOPT_LIBRARY_DIRS} )
 message("ipopt include path is: " ${IPOPT_INCLUDE_DIRS} )
@@ -30,8 +31,9 @@ find_package(Coppelia)
 include_directories(${Coppelia_INCLUDE_DIRS})
 
 
-find_package(Eigen3 REQUIRED)
+set(EIGEN3_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/eigen3")
 include_directories(${EIGEN3_INCLUDE_DIR})
+message(${EIGEN3_INCLUDE_DIR})
 
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")

@@ -138,8 +138,6 @@ int main(int argv, char* argc[])
     optSettings->StackConstraints.push_back(geo::constraint_finalGeneralizedVelocity);
     optSettings->finalGeneralizedVelocity = geo::VectorXr::Zero(optSettings->n,1);
 
-//    optSettings->StackConstraints.push_back(geo::constraint_pelvisSymmetry);
-
     optSettings->StackConstraints.push_back(geo::constraint_centerOfMass);
 
 
