@@ -1,6 +1,9 @@
 #!/bin/bash
 echo "Cinvestav 2022"
 
+LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
+echo $LD_LIBRARY_PATH
+
 echo "//!----------------------------------------------------------------------!//"
 echo "-------------Running analytic and numeric dynamic-objects times-------------"
 echo "//!----------------------------------------------------------------------!//"
