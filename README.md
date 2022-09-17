@@ -22,7 +22,7 @@ Project is created with:
 
 ### Installing
 
-* Install [Ipopt](https://coin-or.github.io/Ipopt/INSTALL.html) at your /home/\<username\> directory.
+* Install [Ipopt](https://coin-or.github.io/Ipopt/INSTALL.html) at /usr/local/bin and /usr/local/include directories.
 
 * To install this project,
 ```
