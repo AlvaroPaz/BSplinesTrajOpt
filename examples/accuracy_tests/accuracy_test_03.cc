@@ -1,10 +1,10 @@
 /**
- *	\file examples/example_01.cc
+ *	\file examples/example_07.cc
  *	\author Alvaro Paz, Gustavo Arechavaleta
  *	\version 1.0
  *	\date 2021
  *
- *	Example to test the dynamic objects and their two first partial derivatives wrt to control points with random c
+ *	Sparsity exploiting test
  */
 
 #define EIGEN_NO_DEBUG
@@ -42,6 +42,15 @@ geo::VectorXr q, dq, ddq;
 //!------------------------------------------------------------------------------!//
 void loop_CoM ( std::shared_ptr< geo::InverseDynamics > robotDynamics ) {
   for (k = 0 ; k < M ; k++) {
+      robotDynamics->computeCenterOfMassII(firstDerivative, secondDerivative);
+    }
+}
+
+
+//! Time loop for contracted center of mass
+//!------------------------------------------------------------------------------!//
+void loop_CoM_contracted ( std::shared_ptr< geo::InverseDynamics > robotDynamics ) {
+  for (k = 0 ; k < M ; k++) {
       robotDynamics->computeContractedCenterOfMass(firstDerivative, secondDerivative);
     }
 }
@@ -51,7 +60,25 @@ void loop_CoM ( std::shared_ptr< geo::InverseDynamics > robotDynamics ) {
 //!------------------------------------------------------------------------------!//
 void loop_Mu ( std::shared_ptr< geo::InverseDynamics > robotDynamics ) {
   for (k = 0 ; k < M ; k++) {
+      robotDynamics->computeCentroidalMomentumII(firstDerivative, secondDerivative);
+    }
+}
+
+
+//! Time loop for centroidal momentum
+//!------------------------------------------------------------------------------!//
+void loop_Mu_contracted ( std::shared_ptr< geo::InverseDynamics > robotDynamics ) {
+  for (k = 0 ; k < M ; k++) {
       robotDynamics->computeContractedCentroidalMomentum(firstDerivative, secondDerivative);
+    }
+}
+
+
+//! Time loop for inverse dynamics
+//!------------------------------------------------------------------------------!//
+void loop_InvDyn_contracted ( std::shared_ptr< geo::InverseDynamics > robotDynamics ) {
+  for (k = 0 ; k < M ; k++) {
+      robotDynamics->computeContractedInverseDynamics(firstDerivative, secondDerivative);
     }
 }
 
@@ -60,7 +87,7 @@ void loop_Mu ( std::shared_ptr< geo::InverseDynamics > robotDynamics ) {
 //!------------------------------------------------------------------------------!//
 void loop_InvDyn ( std::shared_ptr< geo::InverseDynamics > robotDynamics ) {
   for (k = 0 ; k < M ; k++) {
-      robotDynamics->computeContractedInverseDynamics(firstDerivative, secondDerivative);
+      robotDynamics->computeInverseDynamics(firstDerivative, secondDerivative);
     }
 }
 
@@ -72,9 +99,9 @@ int main( int argc, char** argv ){
         urdf_dir.append( "nao_inertial_python.urdf" );  // delete urdf once verifyed
       }
 
-    cout << "//!---------------------------------------------------------------!//" << endl;
-    cout << "Unit test of dynamic-objects time and their partial derivatives wrt c" << endl;
-    cout << "//!---------------------------------------------------------------!//" << endl;
+    cout << "//!-----------------------------------------------------------------------------!//" << endl;
+    cout << "Unit test for second-order derivative of dynamic-objects when symmetry is exploited" << endl;
+    cout << "//!-----------------------------------------------------------------------------!//" << endl;
 
     //! Build multibody
     //!------------------------------------------------------------------------------!//
@@ -133,38 +160,6 @@ int main( int argc, char** argv ){
     //!                               Center of Mass                                 !//
     //!------------------------------------------------------------------------------!//
 
-    //! Perform the center of mass loop
-    //!------------------------------------------------------------------------------!//
-    firstDerivative = false;   secondDerivative = false;
-    t1 = std::chrono::high_resolution_clock::now();
-    loop_CoM( robotDynamics );
-    t2 = std::chrono::high_resolution_clock::now();
-
-    //! Time casting
-    //!------------------------------------------------------------------------------!//
-    auto CoM = robotDynamics->getRobotCoM();
-    t_total = (int) std::chrono::duration_cast< time_preci >( t2 - t1 ).count();
-    cout << endl << "Center of mass = " << t_total/M << " microseconds" << endl;
-
-    //!------------------------------------------------------------------------------!//
-    //!------------------------------------------------------------------------------!//
-
-    //! Perform the center of mass loop enabling the first derivative
-    //!------------------------------------------------------------------------------!//
-    firstDerivative = true;   secondDerivative = false;
-    t1 = std::chrono::high_resolution_clock::now();
-    loop_CoM( robotDynamics );
-    t2 = std::chrono::high_resolution_clock::now();
-
-    //! Time casting
-    //!------------------------------------------------------------------------------!//
-    auto D_CoM = robotDynamics->getRobotD_CoM();
-    t_total = (int) std::chrono::duration_cast< time_preci >( t2 - t1 ).count();
-    cout << "Center of mass + D = " << t_total/M << " microseconds" << endl;
-
-    //!------------------------------------------------------------------------------!//
-    //!------------------------------------------------------------------------------!//
-
     //! Perform the center of mass loop enabling the second derivative
     //!------------------------------------------------------------------------------!//
     firstDerivative = true;   secondDerivative = true;
@@ -174,44 +169,31 @@ int main( int argc, char** argv ){
 
     //! Time casting
     //!------------------------------------------------------------------------------!//
-    auto DD_CoM = robotDynamics->getRobotDD_ContractedCoM();
+    auto DD_CoM = robotDynamics->getRobotDD_CoM();
     t_total = (int) std::chrono::duration_cast< time_preci >( t2 - t1 ).count();
-    cout << "Center of mass + D + DD = " << t_total/M << " microseconds" << endl << endl;
+    cout << endl;
+    cout << "Second-order derivative of Center of Mass                             =  " << t_total/M << " microseconds" << endl;
+    double first = t_total/M;
+
+    //! Perform the center of mass loop enabling the CONTRACTED second derivative
+    //!------------------------------------------------------------------------------!//
+    firstDerivative = true;   secondDerivative = true;
+    t1 = std::chrono::high_resolution_clock::now();
+    loop_CoM_contracted( robotDynamics );
+    t2 = std::chrono::high_resolution_clock::now();
+
+    //! Time casting
+    //!------------------------------------------------------------------------------!//
+    auto DD_CoM_contracted = robotDynamics->getRobotDD_ContractedCoM();
+    t_total = (int) std::chrono::duration_cast< time_preci >( t2 - t1 ).count();
+    cout << "Second-order derivative of Center of Mass when symmetry is exploited  =  " << t_total/M << " microseconds" << endl;
+    double second = t_total/M;
+
+    cout << "Improvement rate                                                      =  " << 100 - (second*100)/first << " % faster" << endl << endl;
+
 
     //!------------------------------------------------------------------------------!//
     //!                            Centroidal Momentum                               !//
-    //!------------------------------------------------------------------------------!//
-
-    //! Perform the centroidal momentum loop
-    //!------------------------------------------------------------------------------!//
-    firstDerivative = false;   secondDerivative = false;
-    t1 = std::chrono::high_resolution_clock::now();
-    loop_Mu( robotDynamics );
-    t2 = std::chrono::high_resolution_clock::now();
-
-    //! Time casting
-    //!------------------------------------------------------------------------------!//
-    auto Mu = robotDynamics->getCentroidalMomentum();
-    t_total = (int) std::chrono::duration_cast< time_preci >( t2 - t1 ).count();
-    cout << "Centroidal momentum = " << t_total/M << " microseconds" << endl;
-
-    //!------------------------------------------------------------------------------!//
-    //!------------------------------------------------------------------------------!//
-
-    //! Perform the centroidal momentum loop enabling the first derivative
-    //!------------------------------------------------------------------------------!//
-    firstDerivative = true;   secondDerivative = false;
-    t1 = std::chrono::high_resolution_clock::now();
-    loop_Mu( robotDynamics );
-    t2 = std::chrono::high_resolution_clock::now();
-
-    //! Time casting
-    //!------------------------------------------------------------------------------!//
-    auto D_Mu = robotDynamics->getD_CentroidalMomentum();
-    t_total = (int) std::chrono::duration_cast< time_preci >( t2 - t1 ).count();
-    cout << "Centroidal momentum + D = " << t_total/M << " microseconds" << endl;
-
-    //!------------------------------------------------------------------------------!//
     //!------------------------------------------------------------------------------!//
 
     //! Perform the centroidal momentum loop enabling the second derivative
@@ -223,44 +205,30 @@ int main( int argc, char** argv ){
 
     //! Time casting
     //!------------------------------------------------------------------------------!//
-    auto DD_Mu = robotDynamics->getDD_ContractedCentroidalMomentum();
+    auto DD_Mu = robotDynamics->getDD_CentroidalMomentum();
     t_total = (int) std::chrono::duration_cast< time_preci >( t2 - t1 ).count();
-    cout << "Centroidal momentum + D + DD = " << t_total/M << " microseconds" << endl << endl;
+    cout << "Second-order derivative of Centroidal Momentum                             =  " << t_total/M << " microseconds" << endl;
+    first = t_total/M;
+
+    //! Perform the centroidal momentum loop enabling the second derivative
+    //!------------------------------------------------------------------------------!//
+    firstDerivative = true;   secondDerivative = true;
+    t1 = std::chrono::high_resolution_clock::now();
+    loop_Mu_contracted( robotDynamics );
+    t2 = std::chrono::high_resolution_clock::now();
+
+    //! Time casting
+    //!------------------------------------------------------------------------------!//
+    auto DD_Mu_contracted = robotDynamics->getDD_ContractedCentroidalMomentum();
+    t_total = (int) std::chrono::duration_cast< time_preci >( t2 - t1 ).count();
+    cout << "Second-order derivative of Centroidal Momentum when symmetry is exploited  =  " << t_total/M << " microseconds" << endl;
+    second = t_total/M;
+
+    cout << "Improvement rate                                                           =  " << 100 - (second*100)/first << " % faster" << endl << endl;
+
 
     //!------------------------------------------------------------------------------!//
     //!                              Inverse Dynamics                                !//
-    //!------------------------------------------------------------------------------!//
-
-    //! Perform the inverse dynamics loop
-    //!------------------------------------------------------------------------------!//
-    firstDerivative = false;   secondDerivative = false;
-    t1 = std::chrono::high_resolution_clock::now();
-    loop_InvDyn( robotDynamics );
-    t2 = std::chrono::high_resolution_clock::now();
-
-    //! Time casting
-    //!------------------------------------------------------------------------------!//
-    auto Tau = robotDynamics->getGeneralizedTorques();
-    t_total = (int) std::chrono::duration_cast< time_preci >( t2 - t1 ).count();
-    cout << "Inverse dynamics = " << t_total/M << " microseconds" << endl;
-
-    //!------------------------------------------------------------------------------!//
-    //!------------------------------------------------------------------------------!//
-
-    //! Perform the inverse dynamics loop enabling the first derivative
-    //!------------------------------------------------------------------------------!//
-    firstDerivative = true;   secondDerivative = false;
-    t1 = std::chrono::high_resolution_clock::now();
-    loop_InvDyn( robotDynamics );
-    t2 = std::chrono::high_resolution_clock::now();
-
-    //! Time casting
-    //!------------------------------------------------------------------------------!//
-    auto D_Tau = robotDynamics->getGeneralizedTorquesFirstDifferentiation();
-    t_total = (int) std::chrono::duration_cast< time_preci >( t2 - t1 ).count();
-    cout << "Inverse dynamics + D = " << t_total/M << " microseconds" << endl;
-
-    //!------------------------------------------------------------------------------!//
     //!------------------------------------------------------------------------------!//
 
     //! Perform the inverse dynamics loop enabling the second derivative
@@ -272,9 +240,32 @@ int main( int argc, char** argv ){
 
     //! Time casting
     //!------------------------------------------------------------------------------!//
-    auto DD_Tau = robotDynamics->getContractedDDTorque();
+    auto DD_Tau = robotDynamics->getGeneralizedTorquesSecondDifferentiation();
     t_total = (int) std::chrono::duration_cast< time_preci >( t2 - t1 ).count();
-    cout << "Inverse dynamics + D + DD = " << t_total/M << " microseconds" << endl << endl << endl;
+    cout << "Second-order derivative of Inverse Dynamics                             =  " << t_total/M << " microseconds" << endl;
+    first = t_total/M;
+
+    //! Perform the inverse dynamics loop enabling the second derivative
+    //!------------------------------------------------------------------------------!//
+    firstDerivative = true;   secondDerivative = true;
+    t1 = std::chrono::high_resolution_clock::now();
+    loop_InvDyn_contracted( robotDynamics );
+    t2 = std::chrono::high_resolution_clock::now();
+
+    //! Time casting
+    //!------------------------------------------------------------------------------!//
+    auto DD_Tau_contracted = robotDynamics->getContractedDDTorque();
+    t_total = (int) std::chrono::duration_cast< time_preci >( t2 - t1 ).count();
+    cout << "Second-order derivative of Inverse Dynamics when symmetry is exploited  =  " << t_total/M << " microseconds" << endl;
+    second = t_total/M;
+
+    cout << "Improvement rate                                                             =  " << 100 - (second*100)/first << " % faster" << endl << endl << endl;
+
+
+//    geo::DirectCollocation* robot_nlp;
+//    robot_nlp{nullptr};
+//    robot_nlp = new geo::DirectCollocation( robot, optSettings );
+
 
 return 0;
 }

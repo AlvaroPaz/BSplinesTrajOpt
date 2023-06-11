@@ -17,3 +17,11 @@ target_link_libraries(com_example_05 ipopt_interface_nao_iner_com ipopt ${GeoMBD
 
 add_executable(com_example_06 main_com_06.cpp)
 target_link_libraries(com_example_06 ipopt_interface_nao_iner_com ipopt ${GeoMBD_LIBRARIES} ${PQP_LIBRARIES})
+
+#-------------------------------------------------------------------------------------------------------------
+
+add_executable(com_example_07 main_com_07.cpp)
+target_link_libraries(com_example_07 ipopt_interface_atlas_iner_com ipopt ${GeoMBD_LIBRARIES} ${PQP_LIBRARIES})
+
+add_executable(com_example_08 main_com_08.cpp)
+target_link_libraries(com_example_08 ipopt_interface_atlas_iner_com ipopt ${GeoMBD_LIBRARIES} ${PQP_LIBRARIES})

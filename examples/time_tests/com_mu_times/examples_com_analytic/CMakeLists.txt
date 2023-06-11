@@ -17,3 +17,4 @@ target_link_libraries(com_analytic_05 ipopt_interface_nao_iner_com ipopt ${GeoMB
 
 add_executable(com_analytic_06 main_com_06.cpp)
 target_link_libraries(com_analytic_06 ipopt_interface_nao_iner_com ipopt ${GeoMBD_LIBRARIES} ${PQP_LIBRARIES})
+
