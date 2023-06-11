@@ -9,8 +9,6 @@ echo "-------------Running analytic and numeric dynamic-objects times-----------
 echo "//!----------------------------------------------------------------------!//"
 
 cd build/examples/time_tests
-./example_01 lwr.urdf
-./example_02 lwr.urdf
 ./example_01 nao_inertial_python.urdf
 ./example_02 nao_inertial_python.urdf
 ./example_01 HRP2.urdf
