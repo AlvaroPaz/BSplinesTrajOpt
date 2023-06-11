@@ -28,21 +28,41 @@ Project is created with:
 ```
 $ ./install.sh
 ```
-### Executing program
+### Executing unit test
 
-* Run time tests,
+* Test analytical derivatives time for all dynamics objects,
 ```
-$ ./run.sh
-```
-
-* Run center of mass example,
-```
-$ ./run_com_example.sh
+$ ./unitest/test_analytic_derivatives_time.sh
 ```
 
-* Run centroidal momentum example,
+* Test numerical derivatives time for all dynamics objects,
 ```
-$ ./run_mu_example.sh
+$ ./unitest/test_numeric_derivatives_time.sh
+```
+
+* Test derivatives accuracy for center of mass, centroidal momentum and inverse dynamics,
+```
+$ ./unitest/test_com_centroidal_dynamics_accuracy.sh
+```
+
+* Test derivatives accuracy for cost function and constraints,
+```
+$ ./unitest/test_cost_constraint_accuracy.sh
+```
+
+* Test time improvement when exploiting symmetry of second-order derivatives,
+```
+$ ./unitest/test_symmetry_exploited.sh
+```
+
+* Test trajectory optimization experiments when center-of-mass constraint is enabled,
+```
+$ ./unitest/test_com_experiments.sh
+```
+
+* Test trajectory optimization experiments when centroidal momentum constraint is enabled,
+```
+$ ./unitest/test_centroidal_experiments.sh
 ```
 ## Help
 
