@@ -259,7 +259,7 @@ int main( int argc, char** argv ){
     cout << "Second-order derivative of Inverse Dynamics when symmetry is exploited  =  " << t_total/M << " microseconds" << endl;
     second = t_total/M;
 
-    cout << "Improvement rate                                                             =  " << 100 - (second*100)/first << " % faster" << endl << endl << endl;
+    cout << "Improvement rate                                                        =  " << 100 - (second*100)/first << " % faster" << endl << endl << endl;
 
 
 //    geo::DirectCollocation* robot_nlp;
