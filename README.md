@@ -47,7 +47,7 @@ $ ./unitest/test_com_centroidal_dynamics_accuracy.sh
 
 * Test derivatives accuracy for cost function and constraints,
 ```
-$ ./unitest/test_cost_constraint_accuracy.sh
+$ ./unitest/test_cost_constraints_accuracy.sh
 ```
 
 * Test time improvement when exploiting symmetry of second-order derivatives,
