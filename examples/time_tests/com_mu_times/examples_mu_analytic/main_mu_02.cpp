@@ -124,6 +124,9 @@ int main(int argv, char* argc[])
 
     q_5 << -0.20, 0.33-0.15, 0.092, -0.48, 0, 0, 1.4112, 1.2000, -1.3730, -0.9863, -0.0062, 0.0015, 0.0, 1.3945, -1.2000, 1.3698, 0.9879, -0.0077, 0, 0.0016-0.1, -1.53, 0.0, 0.93, 0;
 
+
+
+
     std::vector< geo::VectorXr > Q_input;
     Q_input.clear();
     Q_input.push_back(q_4);
@@ -157,13 +160,16 @@ int main(int argv, char* argc[])
     app->RethrowNonIpoptException(true);
 
     //! Change some options
-    app->Options()->SetNumericValue("tol", 1e-4);
+    app->Options()->SetNumericValue("tol", 1e-6);
     app->Options()->SetIntegerValue("max_iter", 5000);
-    app->Options()->SetStringValue("mu_strategy", "adaptive"); ///monotone adaptive
-    app->Options()->SetIntegerValue("print_level", 3);
+    app->Options()->SetStringValue("mu_strategy", "monotone"); ///monotone adaptive
+//    app->Options()->SetIntegerValue("print_level", 3);
+
+//    app->Options()->SetStringValue("linear_solver", "mumps");
 
 //    app->Options()->SetStringValue("derivative_test", "second-order");
-    app->Options()->SetStringValue("nlp_scaling_method", "gradient-based");
+    app->Options()->SetStringValue("nlp_scaling_method", "gradient-based");  //  gradient-based  none
+//    app->Options()->SetIntegerValue("nlp_scaling_max_gradient", 5000);
 
     //! Setting derivation routine
     if(optSettings->deriveRoutine == geo::_BFGS_) {

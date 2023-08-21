@@ -157,13 +157,20 @@ int main(int argv, char* argc[])
     app->RethrowNonIpoptException(true);
 
     //! Change some options
-    app->Options()->SetNumericValue("tol", 1e-4);
+    app->Options()->SetNumericValue("tol", 1e-6);  // es muy sensible a 1e-6
     app->Options()->SetIntegerValue("max_iter", 5000);
-    app->Options()->SetStringValue("mu_strategy", "adaptive"); ///monotone adaptive
-    app->Options()->SetIntegerValue("print_level", 3);
+    app->Options()->SetStringValue("mu_strategy", "monotone"); ///monotone adaptive
+//    app->Options()->SetIntegerValue("print_level", 3);
+
+//    app->Options()->SetStringValue("linear_solver", "mumps");
+
+//    app->Options()->SetStringValue("limited_memory_aug_solver", "extended");
+//    app->Options()->SetIntegerValue("limited_memory_max_history", 15);   // dflt 6
+//    app->Options()->SetStringValue("limited_memory_update_type", "sr1");
 
 //    app->Options()->SetStringValue("derivative_test", "second-order");
-    app->Options()->SetStringValue("nlp_scaling_method", "gradient-based");
+    app->Options()->SetStringValue("nlp_scaling_method", "gradient-based");  //  gradient-based  none
+//    app->Options()->SetIntegerValue("nlp_scaling_max_gradient", 5000);
 
     //! Setting derivation routine
     if(optSettings->deriveRoutine == geo::_BFGS_) {

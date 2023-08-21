@@ -54,7 +54,7 @@ using namespace Eigen;
 
 typedef Eigen::Map<const geo::VectorXr> MapVec;
 
-std::ofstream myfile_1, myfile_2, myfile_3;
+std::ofstream myfile_1, myfile_2, myfile_3, myfile_4;
 
 // using namespace Ipopt;
 
@@ -104,6 +104,7 @@ PracticeNLP::PracticeNLP( std::shared_ptr< geo::MultiBody > robot, std::shared_p
     myfile_1.open ("qData.txt");
     myfile_2.open ("dqData.txt");
     myfile_3.open ("ddqData.txt");
+    myfile_4.open ("cData.txt");
 
 }
 
@@ -266,6 +267,7 @@ bool PracticeNLP::get_starting_point(Ipopt::Index n,
 
     //! set primal solution as linear interpolation
     geo::MatrixXr primalSolution = initialConfiguration.replicate(numberControlPoints,1) + Eigen::kroneckerProduct(geo::VectorXr::LinSpaced(numberControlPoints, 0, 1),finalConfiguration-initialConfiguration);
+
     Map<geo::MatrixXr>( x, n, 1 ) = primalSolution;
 
     return true;
@@ -588,8 +590,8 @@ bool PracticeNLP::eval_h(Ipopt::Index n,
       Map<geo::MatrixXr>( values, nele_hess, 1 ) = stackHessLagrange;
 
       itHess++;
-      if(itHess == 9) itHess = 0;  //! default 9
-    }
+      if(itHess == 3) itHess = 0;  //! default 9
+    }// enable 3 iters for mu_analytic_04, otherwise 1
 
   return true;
 }
@@ -612,7 +614,7 @@ void PracticeNLP::finalize_solution(Ipopt::SolverReturn status,
 
     bool printSolution, saveData, BSplineInterpolation, remoteApiCoppelia;
     printSolution           = false;
-    saveData                = false;
+    saveData                = true;
     BSplineInterpolation    = false;
     remoteApiCoppelia       = true;
 
@@ -675,6 +677,7 @@ void PracticeNLP::finalize_solution(Ipopt::SolverReturn status,
         myfile_1 << qTrajectory << endl;
         myfile_2 << dqTrajectory << endl;
         myfile_3 << ddqTrajectory << endl;
+        myfile_4 << controlPoints << endl;
     }
 
     //! B-Spline extension of vector time

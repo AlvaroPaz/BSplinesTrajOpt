@@ -160,10 +160,10 @@ int main(int argv, char* argc[])
     app->RethrowNonIpoptException(true);
 
     //! Change some options
-    app->Options()->SetNumericValue("tol", 1e-4);
+    app->Options()->SetNumericValue("tol", 1e-6);
     app->Options()->SetIntegerValue("max_iter", 5000);
-    app->Options()->SetStringValue("mu_strategy", "adaptive"); ///monotone adaptive
-    app->Options()->SetIntegerValue("print_level", 3);
+    app->Options()->SetStringValue("mu_strategy", "monotone"); ///monotone adaptive
+//    app->Options()->SetIntegerValue("print_level", 3);
 
 //    app->Options()->SetStringValue("derivative_test", "second-order");
     app->Options()->SetStringValue("nlp_scaling_method", "gradient-based");
